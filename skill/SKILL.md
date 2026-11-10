@@ -4,7 +4,7 @@ description: "Trigger: designing UI artboards with the gentle-design workflow wh
 license: MIT
 metadata:
   author: gentleman-programming
-  version: "1.1.0"
+  version: "1.2.0"
   evidence: references/evidence.md (REA reverse engineering, v1.1.0)
 ---
 
@@ -90,7 +90,9 @@ Fix these before any layout. Values and sources in `references/token-system.md`.
 ## The Professional Gate (before reporting an artboard done)
 
 Run both deterministic gates first (see `references/professional-pass.md` §H1):
-- Static 17-rule gate: `python3 <this-skill>/scripts/design-gate.py <artboard.html>`
+- Static 21-rule gate: `python3 <this-skill>/scripts/design-gate.py <artboard.html>`
+  (regression-pinned by the negative fixture corpus in `fixtures/negative/`, one
+  broken artboard per rule `R1`–`R21`)
 - Browser visual audit (desktop `1440x900` + mobile `390x844`): `python3 <this-skill>/scripts/visual-audit.py <artboard.html>`
 
 Run every item; fix or justify before finishing using the Traffic-Light Critique
@@ -117,6 +119,7 @@ Run every item; fix or justify before finishing using the Traffic-Light Critique
 | Artboard looks "generic AI" | Diff against `references/generic-vs-professional.md` and fix the named gaps |
 | Brief demands a brand palette | Keep the semantic roles + ramp, map the brand into the roles (Rule 3 exception, named in the artboard tradeoff) |
 | Design approved / handed off | Emit `design/<slug>/DESIGN.md` (YAML tokens + rationale per the Google spec) and lint it: `npx -y @google/design.md lint design/<slug>/DESIGN.md` |
+| User wants to sync the installed skill copies | Fingerprint the source copy once: `python3 <this-skill>/scripts/sync-check.py manifest <installed-src>` and keep the output as `sync-manifest.json` next to it. Before every sync run `python3 <this-skill>/scripts/sync-check.py verify <installed-src> sync-manifest.json` (exit 0 = unchanged, 1 = drift); `compare <src> <dest>` for a quick two-root diff |
 | User wants to tune values | Same as gentle-design: sliders + "Copy as prompt" |
 
 ## Output Contract

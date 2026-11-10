@@ -58,6 +58,10 @@ Each rule is a mechanical restatement of one Professional Pass item:
     R15 micro-text-size          -> B1       (font-size literals < 12px / < 0.75rem)
     R16 media-dimensions-alt     -> F1, G    (<img> alt+dimensions, <svg> width/height)
     R17 root-contrast-pair       -> C3, E12  (static WCAG AA >= 4.5:1 on hex pairs in :root)
+    R18 ramp-integrity           -> B1, B3   (font-size off the documented type ramp)
+    R19 surface-legibility       -> C5, E2   (text over unverifiable gradient/low-alpha surfaces)
+    R20 specificity-tell         -> A2, E10  (more than two `!important` declarations)
+    R21 elevation-overshoot      -> E2       (box-shadow blur radius > 40px)
 
 Deliberate allowances (kept narrow so the gate stays quiet on real artboards)
 ---------------------------------------------------------------------------
@@ -73,6 +77,14 @@ Deliberate allowances (kept narrow so the gate stays quiet on real artboards)
   color and belongs in a token too (the fix is one token, not an exception).
 * Emoji detection deliberately ignores arrows and technical symbols (`→`, `⌘`, `⇧`,
   `<kbd>` glyphs) — only pictographic ranges count.
+* `!important` inside the canonical `@media (prefers-reduced-motion: reduce)` reset is
+  exempt from R20: that snippet needs `!important` to beat component transitions and
+  is the one place the cascade escape hatch is warranted.
+* R19 reads the surface alpha of the *same* selector only (one `var()` hop into
+  `:root`). A verifiable solid background on that selector — the `--*-foreground`
+  pairing — silences the rule, because the contrast can then be computed.
+* R21 measures the blur radius only: `0 0 0 9999px`-style ring/hairline tricks and
+  `inset` hairlines keep a blur of `0` and never fire, however large the spread is.
 
 Known limits (a finding is a review prompt, not a verdict; this table is the honest
 boundary of a static scan)
@@ -86,11 +98,18 @@ boundary of a static scan)
 * `R17` checks literal hex token pairs in `:root` (when `--foreground`/`--muted-foreground`
   /`--primary-foreground`/`--card-foreground` and their backgrounds are hex literals);
   `oklch()`/`lab()` pairs and computed DOM contrast are verified by `visual-audit.py`.
+* `R18` resolves `var(--text-*)` and px/rem literals (rem assumes the 16px root);
+  `em`, `%`, `ch` and `vw` sizes stay unverified. Heading order is compared only for
+  selectors that target a bare `h1`–`h6` tag — class-scoped titles are read by a human.
+* `R19` cannot compute a real contrast ratio over a gradient: it reports the pairing
+  as unverifiable and leaves the measured value to `visual-audit.py`.
+* `R20` counts `!important` occurrences, not their effect on the cascade.
 * Selectors are read syntactically; CSS nesting, keyframes and `@media` are handled,
   but `@supports`-style conditional token overrides other than the ones listed above
   are not classified as token blocks.
-* Inline `style=""` attributes are scanned for color/radius/transition/spacing rules
-  but not for R1/R5/R6/R7, which are file-global.
+* Inline `style=""` attributes are scanned for the per-declaration rules (R2-R4, R11,
+  R12, R15, R18, R19, R21) and for `!important` (R20); the file-global rules R1, R5, R6
+  and R7 read the stylesheet only.
 """
 
 from __future__ import annotations
@@ -124,6 +143,10 @@ RULES = {
     "R15": "micro-text-size",
     "R16": "media-dimensions-alt",
     "R17": "root-contrast-pair",
+    "R18": "ramp-integrity",
+    "R19": "surface-legibility",
+    "R20": "specificity-tell",
+    "R21": "elevation-overshoot",
 }
 
 #: shadcn/ui semantic roles (token-system.md §1, evidence E1).
@@ -152,6 +175,28 @@ SLOP_HEX = frozenset({"6366f1", "8b5cf6", "a855f7", "7c3aed"})
 #: Fonts whose first-position dominance is the canonical AI tell (E10).
 TELL_FONTS = frozenset({"inter", "roboto"})
 
+#: Documented type ramp steps (professional-pass.md B1, evidence E7). Steps declared as
+#: `--text-*` tokens in the artboard's `:root` extend this set (e.g. 28/44/56).
+TEXT_RAMP = frozenset({12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72})
+
+#: Smallest ramp step; anything below it belongs to R15 (micro text).
+TEXT_RAMP_MIN = min(TEXT_RAMP)
+
+#: Root font size assumed when a `font-size` is given in `rem`.
+ROOT_FONT_PX = 16.0
+
+#: `!important` budget per stylesheet (R20).
+MAX_IMPORTANT = 2
+
+#: A background below this alpha cannot carry statically verifiable text (R19).
+MIN_BG_ALPHA = 0.25
+
+#: Translucent text over a gradient below this alpha is unverifiable (R19).
+MIN_TEXT_ALPHA_ON_GRADIENT = 0.6
+
+#: Blur radius above which elevation reads as a generic drop shadow (R21).
+MAX_SHADOW_BLUR_PX = 40.0
+
 MAX_TRANSITION_MS = 500
 
 HEX_COLOR_RE = re.compile(
@@ -162,6 +207,16 @@ PX_RE = re.compile(r"(?<![\w.-])(-?\d+(?:\.\d+)?)px\b")
 DURATION_RE = re.compile(r"(?<![\w.-])(\d+(?:\.\d+)?)(ms|s)\b")
 SPACING_PROP_RE = re.compile(r"^(?:margin|padding)(?:-[\w-]+)?$|^(?:row-|column-)?gap$")
 TRANSITION_PROP_RE = re.compile(r"^transition(?:-property|-duration)?$")
+GRADIENT_RE = re.compile(r"(?:repeating-)?(?:linear|radial|conic)-gradient\s*\(", re.IGNORECASE)
+IMPORTANT_RE = re.compile(r"!\s*important\b", re.IGNORECASE)
+ALPHA_HEX_RE = re.compile(
+    r"(?<![&\w])#([0-9a-fA-F]{4}|[0-9a-fA-F]{8})(?![0-9a-fA-F])"
+)
+FUNC_COLOR_VALUE_RE = re.compile(
+    r"(?<![\w-])(rgba?|hsla?|hwb|oklch|oklab|lab|lch)\s*\(([^()]*)\)"
+)
+VAR_CALL_RE = re.compile(r"var\(\s*(--[\w-]+)\s*\)")
+REDUCED_MOTION_MEDIA_RE = re.compile(r"@media\b[^{]*\{", re.IGNORECASE)
 
 #: Pictographic emoji ranges. Arrows (2190-21FF) and technical symbols (2300-23FF)
 #: are excluded on purpose: `→`, `⌘`, `⇧` are typography, not icon slop.
@@ -369,6 +424,8 @@ class Gate:
         self.script_spans = []
         self.allowed_color_spans = []
         self.root_block = None
+        self.root_decls = {}
+        self._ramp_cache = None
         self.css_clean = raw
         self.markup = raw
         self._prepare()
@@ -422,6 +479,13 @@ class Gate:
             if block is self.root_block or self._is_token_remap(block["selector"]):
                 self.allowed_color_spans.append((block["body_start"], block["body_end"]))
 
+        if self.root_block is not None:
+            body = self.css_clean[
+                self.root_block["body_start"] : self.root_block["body_end"]
+            ]
+            for prop, value, *_ in parse_declarations(body, 0, len(body)):
+                self.root_decls[prop.strip().lower()] = value.strip()
+
     @staticmethod
     def _normalized(selector):
         return re.sub(r"\s+", " ", selector).strip()
@@ -449,6 +513,7 @@ class Gate:
         decl_map = {prop.lower(): value.strip() for prop, value, *_ in decls}
         self._rule_block_pairing(decls, decl_map)
         self._rule_wrapper_border(selector, decls)
+        self._rule_surface_legibility(decls, decl_map)
         for prop, value, prop_off, value_start, _value_end in decls:
             low = value.lower()
             self._rule_color(value, prop_off, value_start, allow_color)
@@ -457,6 +522,8 @@ class Gate:
             self._rule_radius(prop, value, prop_off)
             self._rule_font(prop, value, prop_off)
             self._rule_micro_text(prop, value, prop_off)
+            self._rule_text_ramp(prop, value, prop_off)
+            self._rule_elevation(prop, value, prop_off)
 
     def _rule_block_pairing(self, decls, decl_map):
         """R13 unsafe-on-primary when var(--primary) bg pairs with var(--foreground)."""
@@ -510,6 +577,329 @@ class Gate:
                 prop_off,
                 f"font-size {m_rem.group(0)} < 0.75rem (12px) — keep UI text >= 12px (B1)",
             )
+
+    # ------------------------------------------------------------------ #
+    # v1.2.0 semantic rules (R18-R21)
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _parse_alpha_number(text):
+        """Alpha from `0.4` / `40%`, or ``None`` when it is not a number."""
+        raw = text.strip()
+        if not raw:
+            return None
+        try:
+            if raw.endswith("%"):
+                return max(0.0, min(1.0, float(raw[:-1]) / 100.0))
+            return max(0.0, min(1.0, float(raw)))
+        except ValueError:
+            return None
+
+    @classmethod
+    def _alpha_from_call(cls, name, args):
+        """Alpha declared by a color function call, or ``None`` when opaque."""
+        if "/" in args:
+            return cls._parse_alpha_number(args.rsplit("/", 1)[1])
+        parts = [part.strip() for part in args.split(",")]
+        if len(parts) == 4 and name in {"rgba", "hsla"}:
+            return cls._parse_alpha_number(parts[3])
+        return None
+
+    def _alpha_of(self, value, depth=0):
+        """Statically known alpha of a color value (``None`` = opaque or unknown).
+
+        One `var()` hop into `:root` is resolved so token-declared washes
+        (`--secondary: rgb(255 255 255 / 0.06)`) are seen; anything the gate
+        cannot pin down stays ``None`` and is never reported.
+        """
+        low = value.strip().lower()
+        if not low or low in {
+            "none",
+            "transparent",
+            "currentcolor",
+            "inherit",
+            "initial",
+            "unset",
+            "revert",
+        }:
+            return None
+        if GRADIENT_RE.search(low) or "url(" in low:
+            return None
+        hex_alpha = ALPHA_HEX_RE.search(low)
+        if hex_alpha:
+            return int(hex_alpha.group(1)[-2:], 16) / 255.0
+        call = FUNC_COLOR_VALUE_RE.search(low)
+        if call:
+            return self._alpha_from_call(call.group(1), call.group(2))
+        if depth == 0:
+            var_call = VAR_CALL_RE.search(low)
+            if var_call and var_call.group(1) in self.root_decls:
+                return self._alpha_of(self.root_decls[var_call.group(1)], depth=1)
+        return None
+
+    def _rule_surface_legibility(self, decls, decl_map):
+        """R19 surface-legibility: translucent ink over a surface it cannot be read on.
+
+        Both halves must be unverifiable: a translucent ink (alpha < 0.6) over a
+        gradient or over a wash (background alpha < 0.25). An opaque ink on a wash is
+        the sanctioned hover/active pattern (dark-mode.md §4) and stays quiet, as does
+        any selector that also declares a solid background the pairing can fall back to.
+        """
+        fg = decl_map.get("color", "")
+        if not fg:
+            return
+        fg_alpha = self._alpha_of(fg)
+        if fg_alpha is None or fg_alpha >= MIN_TEXT_ALPHA_ON_GRADIENT:
+            return  # opaque or unknown ink: contrast is verifiable, or not statically seen
+        backgrounds = [
+            decl_map[key]
+            for key in ("background", "background-color", "background-image")
+            if decl_map.get(key)
+        ]
+        if not backgrounds:
+            return
+        offset = next(
+            (off for prop, _value, off, *_ in decls if prop.lower() == "color"),
+            decls[0][2],
+        )
+        alphas = [self._alpha_of(bg) for bg in backgrounds]
+        # A verifiable solid pairing on the same selector (the `--*-foreground`
+        # contract) supplies the fallback the declaration was written against.
+        has_solid = any(
+            not GRADIENT_RE.search(bg) and (alpha is None or alpha >= MIN_BG_ALPHA)
+            for bg, alpha in zip(backgrounds, alphas)
+        )
+        if has_solid:
+            return
+        if any(GRADIENT_RE.search(bg) for bg in backgrounds):
+            self.add(
+                "R19",
+                offset,
+                f"text at alpha {fg_alpha:.2f} "
+                f"(< {MIN_TEXT_ALPHA_ON_GRADIENT:g}) over a gradient background — the "
+                f"contrast cannot be verified statically; use an opaque ink or put a "
+                f"solid surface behind it (C5, E2)",
+            )
+            return
+        low_bg = next(
+            (alpha for alpha in alphas if alpha is not None and alpha < MIN_BG_ALPHA),
+            None,
+        )
+        if low_bg is not None:
+            self.add(
+                "R19",
+                offset,
+                f"text at alpha {fg_alpha:.2f} "
+                f"(< {MIN_TEXT_ALPHA_ON_GRADIENT:g}) over a background at alpha "
+                f"{low_bg:.2f} (< {MIN_BG_ALPHA:g}) — both layers are translucent, so the "
+                f"composited contrast cannot be verified; use an opaque ink (C5, E2)",
+            )
+
+    def _text_ramp(self):
+        """Documented ramp: base scale plus `--text-*` px tokens declared in `:root`."""
+        if self._ramp_cache is not None:
+            return self._ramp_cache
+        ramp = set(TEXT_RAMP)
+        for prop, value in self.root_decls.items():
+            if not re.fullmatch(r"--text-[\w-]+", prop) or prop.endswith("-lh"):
+                continue
+            m = PX_RE.search(value)
+            if not m:
+                continue
+            step = float(m.group(1))
+            if step.is_integer():
+                ramp.add(int(step))
+        self._ramp_cache = ramp
+        return ramp
+
+    @staticmethod
+    def _length_px(value):
+        """Resolve a bare length (`17px`, `1.25rem`) to px, or ``None``."""
+        bare = re.sub(r"!\s*important", "", value.strip().lower()).strip()
+        m_px = PX_RE.fullmatch(bare)
+        if m_px:
+            return float(m_px.group(1))
+        m_rem = REM_RE.fullmatch(bare)
+        if m_rem:
+            return float(m_rem.group(1)) * ROOT_FONT_PX
+        return None
+
+    def _resolve_font_px(self, value):
+        """Resolve a `font-size` (`px`/`rem`/`var(--text-*)`) to px, or ``None``."""
+        bare = re.sub(r"!\s*important", "", value.strip().lower()).strip()
+        if "var(" in bare:
+            var_call = VAR_CALL_RE.match(bare)
+            if not var_call or var_call.group(1) not in self.root_decls:
+                return None
+            return self._resolve_font_px(self.root_decls[var_call.group(1)])
+        return self._length_px(bare)
+
+    def _rule_text_ramp(self, prop, value, prop_off):
+        """R18 ramp-integrity: `font-size` must land on the documented type ramp."""
+        if prop.lower() != "font-size":
+            return
+        bare = re.sub(r"!\s*important", "", value.strip().lower()).strip()
+        if not bare or "var(" in bare:
+            return
+        m_px = PX_RE.search(bare)
+        m_rem = REM_RE.search(bare)
+        if m_px is None and m_rem is None:
+            return  # em/%/ch/vw and keyword sizes are not statically verifiable
+        px_values = []
+        if m_px is not None:
+            px_values.append(float(m_px.group(1)))
+        if m_rem is not None:
+            px_values.append(float(m_rem.group(1)) * ROOT_FONT_PX)
+        if any(px_value < TEXT_RAMP_MIN for px_value in px_values):
+            return  # micro text belongs to R15
+        ramp = self._text_ramp()
+        for px_value in px_values:
+            if px_value.is_integer() and int(px_value) in ramp:
+                continue
+            self.add(
+                "R18",
+                prop_off,
+                f"font-size `{bare}` is off the documented type ramp — use "
+                f"`var(--text-*)` or a ramp step (12/14/16/18/20/24/30/36/48/60/72 plus "
+                f"the `--text-*` steps declared in :root) (B1, B3)",
+            )
+            return
+
+    @staticmethod
+    def _heading_levels(selector):
+        """Heading levels targeted by a bare `h1`-`h6` selector, else an empty set."""
+        levels = set()
+        for part in split_top(selector, ","):
+            tail = re.split(r"[\s>+~]", part.strip())[-1]
+            tail = re.sub(r"::?[\w-]+(?:\([^()]*\))?", "", tail)
+            m = re.fullmatch(r"h([1-6])", tail.strip())
+            if m:
+                levels.add(int(m.group(1)))
+        return levels
+
+    def _rule_heading_scale(self):
+        """R18 ramp-integrity: heading levels must not grow with depth."""
+        sizes = {}
+        ambiguous = set()
+        for block in self.blocks:
+            levels = self._heading_levels(block["selector"])
+            if not levels:
+                continue
+            body_start = block["body_start"]
+            body = self.css_clean[body_start : block["body_end"]]
+            if "{" in body:
+                continue
+            size = offset = None
+            for prop, value, prop_off, *_ in parse_declarations(body, 0, len(body)):
+                if prop.lower() != "font-size":
+                    continue
+                size = self._resolve_font_px(value)
+                offset = body_start + prop_off
+                break
+            if size is None:
+                continue
+            for level in levels:
+                if level in sizes and sizes[level][0] != size:
+                    ambiguous.add(level)
+                sizes.setdefault(level, (size, offset))
+        for level in range(1, 6):
+            if level in ambiguous or (level + 1) in ambiguous:
+                continue
+            if level not in sizes or (level + 1) not in sizes:
+                continue
+            deeper_size, deeper_offset = sizes[level + 1]
+            shallower_size = sizes[level][0]
+            if deeper_size > shallower_size:
+                self.add(
+                    "R18",
+                    deeper_offset,
+                    f"h{level + 1} font-size {deeper_size:g}px exceeds h{level} "
+                    f"{shallower_size:g}px — heading levels must not grow with depth "
+                    f"(B1, B3)",
+                )
+
+    def _reduced_motion_spans(self):
+        """Spans of `@media (prefers-reduced-motion: …)` blocks (R20 allowance)."""
+        spans = []
+        css = self.css_clean
+        for m in REDUCED_MOTION_MEDIA_RE.finditer(css):
+            if "prefers-reduced-motion" not in m.group(0).lower():
+                continue
+            start = m.end() - 1
+            depth = 0
+            i = start
+            while i < len(css):
+                ch = css[i]
+                if ch in "\"'":
+                    i = skip_string(css, i, len(css))
+                    continue
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                    if depth == 0:
+                        spans.append((start, i + 1))
+                        break
+                i += 1
+        return spans
+
+    def _rule_specificity(self):
+        """R20 specificity-tell: more than `MAX_IMPORTANT` `!important` declarations."""
+        spans = self._reduced_motion_spans()
+        count = 0
+        first = None
+        for start, end in self.css_spans:
+            for m in IMPORTANT_RE.finditer(self.css_clean, start, end):
+                if any(span_start <= m.start() < span_end for span_start, span_end in spans):
+                    continue
+                count += 1
+                first = m.start() if first is None else first
+        for m in STYLE_ATTR_RE.finditer(self.markup):
+            for hit in IMPORTANT_RE.finditer(m.group(1)):
+                count += 1
+                first = m.start(1) + hit.start() if first is None else first
+        if count > MAX_IMPORTANT:
+            self.add(
+                "R20",
+                first or 0,
+                f"{count} `!important` declarations (budget {MAX_IMPORTANT}) — a "
+                f"specificity war is a design smell; scope the selector or fix the token "
+                f"layer instead (A2, E10)",
+            )
+
+    @staticmethod
+    def _shadow_blur(layer):
+        """Blur radius of one `box-shadow` layer (0 with fewer than three lengths)."""
+        lengths = []
+        for token in layer.split():
+            if token.lower() == "inset":
+                continue
+            m_px = PX_RE.fullmatch(token)
+            if m_px:
+                lengths.append(float(m_px.group(1)))
+                continue
+            if re.fullmatch(r"[+-]?0(?:\.0+)?", token):
+                lengths.append(0.0)
+                continue
+            break  # shadow grammar: lengths first, then <color>
+        return lengths[2] if len(lengths) >= 3 else 0.0
+
+    def _rule_elevation(self, prop, value, prop_off):
+        """R21 elevation-overshoot: blur radius > 40px on any `box-shadow` layer."""
+        if prop.lower() != "box-shadow":
+            return
+        for layer in split_top(value, ","):
+            blur = self._shadow_blur(layer)
+            if blur <= MAX_SHADOW_BLUR_PX:
+                continue
+            self.add(
+                "R21",
+                prop_off,
+                f"box-shadow blur {blur:g}px > {MAX_SHADOW_BLUR_PX:g}px — professional "
+                f"surfaces keep elevation subtle (small blur, alpha <= 0.12); a wide blur "
+                f"reads as a generic drop shadow (E2)",
+            )
+            return
 
     def _rule_color(self, value, prop_off, value_start, allow_color):
         """R2 raw-color-outside-root (and R8 for gradient slop hexes).
@@ -662,9 +1052,7 @@ class Gate:
                 "(" + "/".join(SEMANTIC_TOKENS) + ") before any component CSS (A1)",
             )
             return
-        body = self.css_clean[self.root_block["body_start"] : self.root_block["body_end"]]
-        decls = parse_declarations(body, 0, len(body))
-        declared = {prop: val.strip() for prop, val, *_ in decls}
+        declared = dict(self.root_decls)
         for token in SEMANTIC_TOKENS:
             if f"--{token}" not in declared:
                 if token == "primary-foreground":
@@ -892,6 +1280,8 @@ class Gate:
         self._rule_focus()
         self._rule_icons()
         self._rule_media_tags()
+        self._rule_heading_scale()
+        self._rule_specificity()
         return self._sorted_findings()
 
     def _sorted_findings(self):
@@ -919,7 +1309,7 @@ def main(argv=None):
         prog="design-gate.py",
         description=(
             "Deterministic mechanical design gate for gentle-design-skill artboards "
-            "(17 rules; see references/professional-pass.md)."
+            "(21 rules; see references/professional-pass.md)."
         ),
         epilog="Exit codes: 0 clean, 1 findings, 2 usage error.",
     )

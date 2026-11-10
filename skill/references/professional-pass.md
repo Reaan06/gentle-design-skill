@@ -82,13 +82,16 @@ be checked by reading the artboard's CSS/markup. Evidence refs point to `evidenc
 
 Close every critique pass with three explicit buckets mapped to mechanical rules:
 
-- **ROJO (Blocker — must fix before delivery)**: any `design-gate.py` failure (`R1`–`R17`),
+- **ROJO (Blocker — must fix before delivery)**: any `design-gate.py` failure (`R1`–`R21`),
   any `visual-audit.py` failure (horizontal overflow, text clipping, computed contrast <4.5:1
-  or <3:1 large/UI), missing `primary-foreground` pairing, broken responsive story, or A–G
-  blocker (raw colors outside `:root`, slop palette, `Inter`/`Roboto` first, missing focus ring).
+  or <3:1 large/UI), missing `primary-foreground` pairing, off-ramp type sizes, text over
+  double-translucent surfaces, broken responsive story, or A–G blocker (raw colors outside
+  `:root`, slop palette, `Inter`/`Roboto` first, missing focus ring).
 - **AMARILLO (Mejora — fix if budget allows or document tradeoff)**: `R10` review flags,
   border-heavy non-interactive wrappers (`composition-patterns.md` §2.1), non-uniform button
-  group sizes, dense copy >65ch, or missing `State Switcher` on product screens.
+  group sizes, dense copy >65ch, `R20` specificity escapes (0–2 allowed, >2 is the tell),
+  wide-blur elevation (`R21`) on layers that are not genuinely floating, or missing
+  `State Switcher` on product screens.
 - **VERDE (Aprobado)**: verified token discipline, measured contrast, layout hierarchy, and
   direction fidelity with exact counts/ratios.
 
@@ -118,13 +121,41 @@ browser, no network. Exit `0` clean, `1` findings, `2` usage error; findings pri
 | R15 `micro-text-size` | explicit `font-size` literal `< 12px` (`< 0.75rem`) | B1 |
 | R16 `media-dimensions-alt` | `<img>` missing `alt`/`width`/`height`, or `<svg>` missing `width`/`height` | F1, G |
 | R17 `root-contrast-pair` | literal hex foreground/background pair in `:root` `< 4.5:1` (WCAG AA) | C3, E12 |
+| R18 `ramp-integrity` | `font-size` off the documented ramp (not `var(--text-*)`, not a px/rem step in 12/14/16/18/20/24/30/36/48/60/72 plus the `--text-*` steps declared in `:root`), or a heading level sized larger than the level above it | B1, B3 |
+| R19 `surface-legibility` | `color` at alpha < 0.6 over a `*-gradient()` background, or over a background whose own alpha < 0.25 — both layers translucent means the composited contrast is unprovable, so the pairing is reported (a declared solid fallback pairing silences it) | C5, E2 |
+| R20 `specificity-tell` | more than two `!important` declarations outside the `prefers-reduced-motion` reset | A2, E10 |
+| R21 `elevation-overshoot` | `box-shadow` blur radius > 40px on any layer (spread is not measured, so `0 0 0 9999px` rings stay legal) | E2 |
 
 Deliberate allowances, so the gate stays quiet on legitimate systems: raw colors inside
 `:root` and inside token re-map blocks (`[data-theme=…]`, `.dark`,
 `@media (prefers-color-scheme: …)`); `calc()` token derivations for color and spacing;
-negative ramp-step margins; arrows/`⌘`/`⇧` and `<kbd>` glyphs (not emoji).
+negative ramp-step margins; arrows/`⌘`/`⇧` and `<kbd>` glyphs (not emoji); the canonical
+`@media (prefers-reduced-motion: reduce)` reset (`R20` excludes its `!important`s — that
+snippet needs them to beat component transitions); an opaque ink over a low-alpha wash
+(the hover/active pattern — `R19` requires *both* layers to be translucent, or a gradient
+with no declared fallback); a solid `--*-foreground` background pairing on the same
+selector (`R19`); and ring/hairline shadows with a `0` blur (`R21`).
 
 Limits: durations and colors behind `var()` cannot be evaluated statically (`R17` checks
-literal `:root` hex pairs only); layout overflow, clipping, and computed DOM contrast across
-themes are verified dynamically by `scripts/visual-audit.py`. A finding is a review prompt,
-not a verdict — fix it or name the deviation and why (Hard Rule 1).
+literal `:root` hex pairs only); `em`/`%`/`ch`/`vw` type sizes stay unverified and heading
+order is compared only for bare `h1`–`h6` selectors (`R18`); a gradient never yields a
+contrast ratio, only an unverifiable finding (`R19`); `!important` is counted, not judged
+in context (`R20`). Layout overflow, clipping, and computed DOM contrast across themes are
+verified dynamically by `scripts/visual-audit.py`. A finding is a review prompt, not a
+verdict — fix it or name the deviation and why (Hard Rule 1).
+
+### Negative fixture corpus (`fixtures/negative/`)
+
+Every rule above is pinned by one broken artboard, `r<NN>-<slug>.html` (R1 →
+`r01-token-block.html` … R21 → `r21-elevation-overshoot.html`). Each file is a complete
+document: a copy of the clean baseline artboard mutated in exactly one way, so exactly
+one rule fires with one finding. `tests/test_design_gate.py` re-derives the expected rule
+from the filename and asserts nothing else fires. Two uses:
+
+- **Calibration**: when you doubt a rule, break it deliberately in a copy of your artboard
+  and confirm the gate catches that and only that.
+- **Regression guard**: a rule that stops firing on its fixture, or starts firing on a
+  neighbour's fixture, fails the suite instead of shipping.
+
+Never "fix" a fixture to make the suite pass — a fixture that trips two rules means the
+rules overlap, and the overlap is the bug.

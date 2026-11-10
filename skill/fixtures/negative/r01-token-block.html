@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>negative fixture — Token block incomplete</title>
+<!-- Negative fixture for design-gate.py rule R1: the clean baseline artboard
+     mutated in exactly one way, so exactly one rule fires. The corpus test in
+     tests/test_design_gate.py pins that property; fix the rule, never the fixture. -->
+<style>
+/* ============================================================
+   TOKEN BLOCK — same ramp and semantic roles as the clean baseline.
+   ============================================================ */
+:root {
+  --background: #ffffff;
+  --foreground: #0b1210;
+  --card: #ffffff;
+  --card-foreground: #0b1210;
+  --primary: #0b5f4f;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #0b1210;
+  --muted: #f3f4f6;
+  --muted-foreground: #596663;
+  --accent: #eaf0ee;
+  --border: #e5e7eb;
+  --input: #d1d5db;
+  --ring: #0b5f4f;
+  --radius: 0.625rem;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --text-xs: 12px;   --text-xs-lh: 16px;
+  --text-sm: 14px;   --text-sm-lh: 20px;
+  --text-base: 16px; --text-base-lh: 24px;
+  --text-lg: 18px;   --text-lg-lh: 28px;
+  --text-xl: 20px;   --text-xl-lh: 28px;
+  --text-2xl: 24px;  --text-2xl-lh: 32px;
+  --text-3xl: 30px;  --text-3xl-lh: 36px;
+  --text-4xl: 36px;  --text-4xl-lh: 40px;
+  --text-5xl: 48px;  --text-5xl-lh: 1;
+  --text-6xl: 60px;  --text-6xl-lh: 1;
+  --text-7xl: 72px;  --text-7xl-lh: 1;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+}
+
+h1, h2, h3, p { margin: 0; }
+
+.page {
+  max-width: 960px;
+  margin-inline: auto;
+  padding: 48px 24px;
+}
+
+.title {
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin-top: 12px;
+  font-size: var(--text-lg);
+  line-height: var(--text-lg-lh);
+  color: var(--muted-foreground);
+}
+
+.actions { display: flex; gap: 12px; margin-top: 24px; }
+
+.btn {
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  transition: background-color 180ms var(--ease-out);
+}
+
+.btn:hover { background: var(--secondary); color: var(--secondary-foreground); }
+
+:where(a, button):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<main class="page">
+  <h1 class="title">Token block incomplete</h1>
+  <p class="lead">One semantic role was dropped from the root block.</p>
+  <div class="actions">
+    <button class="btn" type="button">Primary action</button>
+  </div>
+</main>
+</body>
+</html>

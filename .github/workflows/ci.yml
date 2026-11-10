@@ -26,6 +26,9 @@ jobs:
       - name: Run static design gate across all example artboards
         run: python3 skill/scripts/design-gate.py examples/*/*.html
 
+      - name: Verify skill copy against sync-manifest
+        run: python3 skill/scripts/sync-check.py verify skill skill/sync-manifest.json
+
       - name: Set up Node.js for DESIGN.md lint
         uses: actions/setup-node@v4
         with:
@@ -36,3 +39,11 @@ jobs:
           for file in examples/*/DESIGN.md; do
             npx -y @google/design.md lint "$file"
           done
+
+      - name: Set up agent-browser for visual audit
+        run: |
+          npm install -g agent-browser
+          agent-browser install --with-deps
+
+      - name: Run visual audit (headless Chromium) over example artboards
+        run: python3 skill/scripts/visual-audit.py examples/*/*.html --viewport both --json

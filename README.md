@@ -19,8 +19,9 @@ Built by **reverse engineering** (REA methodology) how professional AI design to
 | Dark mode | `references/dark-mode.md` | 11-role re-mapping, lightness-ladder elevation, contrast on dark pairs |
 | Harness architecture | `references/harness-architecture.md` | how Stitch, design.md, v0, Anthropic skills, Figma Make Kits, Lovable work internally |
 | Pre-delivery checklist | `references/professional-pass.md` | ~40 mechanical checks + Traffic-Light Critique (`ROJO`/`AMARILLO`/`VERDE`) + render→screenshot→critique loop |
-| **Static gate** | `scripts/design-gate.py` | 17 static rules (`R1`–`R17`: tokens, 4px ramp, `on-*` pairing, wrapper borders, micro-text, media attrs, `:root` contrast) — exits 0/1, `--json` mode |
+| **Static gate** | `scripts/design-gate.py` | 21 static rules (`R1`–`R21`: tokens, 4px ramp, `on-*` pairing, wrapper borders, micro-text, media attrs, `:root` contrast, type-ramp integrity, surface legibility, `!important` abuse, shadow overshoot) — pinned by a 21-artboard negative fixture corpus in `fixtures/negative/`; exits 0/1, `--json` mode |
 | **Visual browser audit** | `scripts/visual-audit.py` | headless Chromium (`agent-browser`) check at `1440x900` + `390x844` for horizontal overflow, clipped text, and computed WCAG AA contrast |
+| **Anti-drift verifier** | `scripts/sync-check.py` | SHA-256 tree comparison across skill copies (`manifest` / `verify` / `compare`) so installed copies never silently diverge |
 
 ## How it works in a session
 
