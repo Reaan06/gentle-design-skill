@@ -46,4 +46,4 @@ jobs:
           agent-browser install --with-deps
 
       - name: Run visual audit (headless Chromium) over example artboards
-        run: python3 skill/scripts/visual-audit.py examples/*/*.html --viewport both --json
+        run: python3 skill/scripts/visual-audit.py examples/*/*.html --viewport auto --json
