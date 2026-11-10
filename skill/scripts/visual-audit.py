@@ -10,6 +10,11 @@ that static HTML scanning (`design-gate.py`) cannot observe:
 3. Computed WCAG AA contrast (`>= 4.5:1` normal text, `>= 3.0:1` large text `>= 24px` or bold `>= 18.66px`)
    walking ancestor backgrounds with alpha compositing.
 4. Optional viewport screenshots (`--screenshot-dir`).
+5. Fixed-desktop artboards are detected deterministically first via
+   `<body data-platform="desktop">`; the `.app` computed-style heuristic
+   (width >= 1200px with `overflow: hidden`) remains as a fallback for
+   unmarked boards. In `--viewport auto` mode the mobile pass is skipped
+   for fixed-desktop boards; `--viewport both` (CI mode) always audits both.
 
 Usage
 -----
@@ -158,6 +163,7 @@ AUDIT_JS = r"""(() => {
   }
 
   const isFixedDesktopApp = (() => {
+    if (document.body && document.body.getAttribute('data-platform') === 'desktop') return true;
     const app = document.querySelector('.app');
     if (!app) return false;
     const cs = getComputedStyle(app);

@@ -31,11 +31,11 @@
     "references/platform-desktop.md": "35f7361727bd79b61f1a141d032a4ab16bdeacc46e273e2e84de83599fab668a",
     "references/platform-mobile.md": "0d5b75ef3b8ba223fdc5ca33f81d6e17141355b62db76148ef1f374983193bbe",
     "references/platform-web.md": "fbbaaa825a7dd967fb685d574e24ccdf2cc9796c2bfcb3e3131e28e8911a7cfc",
-    "references/professional-pass.md": "6e2c910f603e5f3044247497692803d91be0f455ca89060d6c4ce0035191c126",
+    "references/professional-pass.md": "8cd008e780afe4e277013cfe38206cf75ad0e3bf839c0bae0fdb7db39f41eb32",
     "references/style-directions.md": "66ec542b175aa0f4204bd251394b16d724f66ecbbb62722fe4870ceea5fca79f",
     "references/token-system.md": "eb93ecedf4705ec2e858532603d285cc5cd86e25b026ca0ac6b98a69e1ea7e8a",
     "scripts/design-gate.py": "8e3e453a29d8a389a77c98ff67d08fb0bc218a3a203e760f598a0fafa71056dd",
     "scripts/sync-check.py": "c03c82e3bfdc6509f8bd431cc57b3bc82e7e3373f3b024edd45883e8cc447131",
-    "scripts/visual-audit.py": "7750e136ef0e359541bb53e445ffc53bece5f2fb125b4b730cfd6657346d105e"
+    "scripts/visual-audit.py": "0533f025979828bdbc8ee5a7209cd44fded9c94e5d342d7a459973a9d78d55e4"
   }
 }

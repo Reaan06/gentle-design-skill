@@ -77,6 +77,10 @@ be checked by reading the artboard's CSS/markup. Evidence refs point to `evidenc
       first, fixing all blockers **before** subjective polish. Then inspect screenshots
       against the brief and emit a structured **Traffic-Light Critique** (E8, E10, E12).
 - [ ] H2 Compare against `design/system.md` tokens when the project has one.
+- [ ] H3 Platform-specific artboards (desktop-class boards that must not degrade to a
+      mobile layout) declare `<body data-platform="desktop">` so `visual-audit.py`'s
+      auto mode skips the mobile pass deterministically; unmarked boards fall back
+      to the `.app` width/overflow heuristic.
 
 ### Traffic-Light Critique format
 
