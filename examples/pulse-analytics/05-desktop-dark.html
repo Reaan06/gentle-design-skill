@@ -1,0 +1,1286 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<meta name="color-scheme" content="dark">
+<title>Pulse — Events workspace (desktop, dark)</title>
+<style>
+/* ============================================================
+   TOKEN BLOCK — DARK. Same eleven semantic roles as 02/03, values re-mapped
+   (references/dark-mode.md §1-§2). Semantic roles: shadcn/ui convention (E1),
+   ramp: E7.
+   Static board: dark is pinned in :root + data-theme="dark" so the screenshot is
+   deterministic. At runtime the identical declarations live in
+   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
+   (dark-mode.md §6); no JS owns the theme and color-scheme is declared in :root
+   and in <head>.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  /* Semantic color roles — DARK re-map of the same eleven roles (light values
+     live in 02/03). Mapping rules + measured pairs: references/dark-mode.md. */
+  --background: #0c100f;               /* oklch .168 .007 179 */
+  --foreground: #e9efed;               /* oklch .947 — not pure white */
+  --card: #1c2221;                     /* L +0.078: surfaces elevate by lightness */
+  --card-foreground: #e9efed;
+  --popover: #232a29;                  /* top of the ladder (L .278) */
+  --popover-foreground: #e9efed;
+  --primary: #5fd6b8;                  /* inverted: light pill on dark */
+  --primary-foreground: #05100d;       /* 10.86:1 on --primary */
+  --secondary: rgb(255 255 255 / 0.06);/* wash, not a color */
+  --secondary-foreground: #e9efed;
+  --muted: rgb(255 255 255 / 0.06);
+  --muted-foreground: #9daba7;         /* 8.04:1 bg / 6.78:1 card / 6.15:1 popover */
+  --accent: rgb(255 255 255 / 0.08);
+  --accent-foreground: #e9efed;
+  --destructive: #f4786a;              /* lightened: 7.06:1 bg / 5.95:1 card */
+  --destructive-foreground: #170604;   /* 7.27:1 on --destructive */
+  --border: rgb(255 255 255 / 0.12);   /* low-alpha white replaces the gray ramp */
+  --input: rgb(255 255 255 / 0.38);    /* 3.56:1 — WCAG 1.4.11 UI boundary */
+  --ring: #8be8d2;                     /* 13.29:1 — focus lightens independently */
+
+  /* Radius: one token + derivatives */
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-pill: 9999px;
+
+  /* Type ramp: Tailwind v4 paired scale (E7) */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --text-xs: 12px;   --text-xs-lh: 16px;
+  --text-sm: 14px;   --text-sm-lh: 20px;
+  --text-base: 16px; --text-base-lh: 24px;
+  --text-lg: 18px;   --text-lg-lh: 28px;
+  --text-xl: 20px;   --text-xl-lh: 28px;
+  --text-2xl: 24px;  --text-2xl-lh: 32px;
+  --text-3xl: 30px;  --text-3xl-lh: 36px;
+  --text-4xl: 36px;  --text-4xl-lh: 40px;
+  --text-5xl: 48px;  --text-5xl-lh: 1;
+  --text-6xl: 60px;  --text-6xl-lh: 1;
+  --text-7xl: 72px;  --text-7xl-lh: 1;
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-loose: 0.06em;
+  --measure: 65ch;
+
+  /* Spacing: 4px ramp (E7, --spacing: .25rem) */
+  --space-1: 1px;    --space-2: 2px;    --space-4: 4px;    --space-8: 8px;
+  --space-12: 12px;  --space-16: 16px;  --space-20: 20px;  --space-24: 24px;
+  --space-28: 28px;  --space-32: 32px;  --space-36: 36px;  --space-40: 40px;
+  --space-44: 44px;  --space-48: 48px;  --space-56: 56px;  --space-64: 64px;
+  --space-80: 80px;  --space-96: 96px;  --space-128: 128px;
+
+  /* Layout dimensions per platform */
+  --container-max: 1216px;
+  --content-max: 1120px;
+  --hero-panel-w: 480px;
+  --nav-h: 64px;
+  --board-w: 1440px;
+  --board-h: 900px;
+  --frame-w: 390px;
+  --frame-h: 844px;
+  --safe-top: 47px;
+  --safe-bottom: 34px;
+  --appbar-h: 56px;
+  --tabbar-h: 56px;
+  --hit-min: 44px;
+  --rail-w: 48px;
+  --sidebar-w: 248px;
+  --inspector-w: 320px;
+  --topbar-h: 48px;
+  --statusbar-h: 24px;
+  --row-h: 32px;
+  --row-tap-h: 64px;
+
+  /* Elevation: on dark the shadow must be deep and carry a 1px ring;
+     light-theme alphas are invisible on near-black (dark-mode.md §4). */
+  --shadow-popover: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.1);
+  --shadow-modal: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.1);
+
+  /* Motion */
+  --duration-micro: 120ms;
+  --duration-state: 180ms;
+  --duration-enter: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.25, 1);
+  --stagger: 60ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+button { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+:where(a, button, input, [tabindex], [role="treeitem"]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.muted { color: var(--muted-foreground); }
+.mono { font-family: var(--font-mono); }
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--space-20);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  white-space: nowrap;
+}
+
+/* ---------- Shell ---------- */
+.app {
+  width: var(--board-w);
+  height: var(--board-h);
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.workspace { flex: 1; min-height: 0; display: flex; }
+
+/* ---------- Activity rail ---------- */
+.rail {
+  flex: none;
+  width: var(--rail-w);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block: var(--space-8);
+  gap: var(--space-4);
+  background: var(--background);
+}
+.rail__brand {
+  width: var(--space-28);
+  height: var(--space-28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  margin-bottom: var(--space-8);
+}
+.rail__btn {
+  position: relative;
+  width: var(--rail-w);
+  height: var(--space-36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: 0;
+  transition: background-color var(--duration-micro) var(--ease-out), color var(--duration-micro) var(--ease-out);
+}
+.rail__btn::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: var(--space-4);
+  bottom: var(--space-4);
+  width: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  transition: background-color var(--duration-micro) var(--ease-out);
+}
+.rail__btn:not(:disabled):hover { background: var(--accent); color: var(--foreground); }
+.rail__btn:not(:disabled):active { transform: scale(0.97); background: var(--secondary); }
+.rail__btn[aria-current="true"] { color: var(--foreground); }
+.rail__btn[aria-current="true"]::before { background: var(--primary); }
+.rail__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.rail__btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(var(--rail-w) - var(--space-4));
+  top: 50%;
+  transform: translateY(-50%);
+  padding: var(--space-4) var(--space-8);
+  background: var(--foreground);
+  color: var(--background);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+.rail__btn:hover::after { opacity: 1; transition: opacity var(--duration-micro) var(--ease-out) 300ms; }
+.rail__spacer { flex: 1; }
+.rail__avatar {
+  width: var(--space-28);
+  height: var(--space-28);
+  border-radius: var(--radius-pill);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+}
+
+/* ---------- Sidebar tree ---------- */
+.sidebar {
+  flex: none;
+  width: var(--sidebar-w);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--background);
+}
+.sidebar__head {
+  height: var(--topbar-h);
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding-inline: var(--space-12);
+  border-bottom: 1px solid var(--border);
+}
+.sidebar__ws {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+  height: var(--space-32);
+  padding-inline: var(--space-8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), border-color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.sidebar__ws:not(:disabled):hover { background: var(--accent); border-color: var(--input); }
+.sidebar__ws:not(:disabled):active { transform: scale(0.97); }
+.sidebar__ws:disabled { opacity: 0.45; cursor: not-allowed; }
+.sidebar__wsname { margin-inline-end: auto; }
+
+.tree { flex: 1; min-height: 0; padding: var(--space-8) var(--space-8); overflow: hidden; }
+.tree__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: var(--space-28);
+  padding-inline: var(--space-8);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  transition: background-color var(--duration-micro) var(--ease-out), color var(--duration-micro) var(--ease-out);
+}
+.tree__item:hover { background: var(--accent); }
+.tree__item:active { transform: scale(0.97); }
+.tree__item[aria-selected="true"] { background: var(--secondary); font-weight: var(--weight-medium); }
+.tree__item[aria-selected="true"] .tree__icon { color: var(--primary); }
+.tree__item[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.tree__item--l2 { padding-inline-start: var(--space-24); }
+.tree__item--l3 { padding-inline-start: var(--space-40); }
+.tree__chev { color: var(--muted-foreground); display: inline-flex; flex: none; }
+.tree__icon { color: var(--muted-foreground); display: inline-flex; flex: none; }
+.tree__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree__count {
+  margin-inline-start: auto;
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.sidebar__foot {
+  flex: none;
+  padding: var(--space-12);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.sidebar__footrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+}
+.meter {
+  height: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--secondary);
+  overflow: hidden;
+}
+.meter__fill { display: block; height: 100%; width: var(--v); background: var(--primary); }
+
+/* ---------- Main ---------- */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.main__topbar {
+  flex: none;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding-inline: var(--space-16) var(--space-12);
+  border-bottom: 1px solid var(--border);
+}
+.crumbs { display: flex; align-items: center; gap: var(--space-8); font-size: var(--text-sm); line-height: var(--text-sm-lh); }
+.crumbs__sep { color: var(--input); }
+.crumbs__now { font-weight: var(--weight-medium); }
+
+/* Command palette affordance */
+.palette {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  width: var(--inspector-w);
+  height: var(--space-32);
+  padding-inline: var(--space-12) var(--space-8);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  cursor: pointer;
+  transition: border-color var(--duration-micro) var(--ease-out), background-color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.palette:not(:disabled):hover { background: var(--accent); border-color: var(--primary); }
+.palette:not(:disabled):active { transform: scale(0.97); }
+.palette:disabled { opacity: 0.45; cursor: not-allowed; }
+.palette__text {
+  margin-inline-end: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: var(--space-32);
+  padding-inline: var(--space-12);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), border-color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out), opacity var(--duration-micro) var(--ease-out);
+}
+.btn--primary { background: var(--primary); color: var(--primary-foreground); }
+.btn--primary:not(:disabled):hover { background: color-mix(in oklab, var(--primary) 86%, var(--foreground)); }
+.btn--primary:not(:disabled):active { transform: scale(0.97); }
+.btn--ghost { background: transparent; color: var(--foreground); border-color: var(--border); }
+.btn--ghost:not(:disabled):hover { background: var(--accent); border-color: var(--input); }
+.btn--ghost:not(:disabled):active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.iconbtn {
+  width: var(--space-32);
+  height: var(--space-32);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.iconbtn:not(:disabled):hover { background: var(--accent); color: var(--foreground); }
+.iconbtn:not(:disabled):active { transform: scale(0.97); }
+.iconbtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.main__body { flex: 1; min-height: 0; display: flex; }
+
+/* ---------- Table pane ---------- */
+.pane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pane__head {
+  flex: none;
+  padding: var(--space-16) var(--space-16) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+.pane__titlerow { display: flex; align-items: center; gap: var(--space-12); }
+.pane__title {
+  font-size: var(--text-xl);
+  line-height: var(--text-xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  margin-inline-end: auto;
+}
+.pane__toolbar { display: flex; align-items: center; gap: var(--space-8); }
+.segmented {
+  display: inline-flex;
+  padding: var(--space-2);
+  gap: var(--space-2);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.segmented__item {
+  height: var(--space-24);
+  padding-inline: var(--space-8);
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.segmented__item:not(:disabled):hover { background: var(--accent); color: var(--foreground); }
+.segmented__item:not(:disabled):active { transform: scale(0.97); }
+.segmented__item[aria-pressed="true"] { background: var(--card); color: var(--foreground); box-shadow: inset 0 0 0 1px var(--border); }
+.segmented__item:disabled { opacity: 0.45; cursor: not-allowed; }
+.pane__spacer { flex: 1; }
+
+.tablewrap { flex: 1; min-height: 0; overflow: hidden; border-top: 1px solid var(--border); }
+
+/* Dense table: 32px rows, every column on one CSS grid */
+.thead, .trow, .tempty {
+  display: grid;
+  grid-template-columns: var(--space-32) minmax(0, 2.2fr) minmax(0, 1.2fr) var(--space-80) var(--space-80) var(--space-64) var(--space-80);
+  align-items: center;
+  gap: var(--space-8);
+  padding-inline: var(--space-16) var(--space-12);
+}
+.thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: var(--space-28);
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+}
+.th {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-micro) var(--ease-out);
+}
+.th:not(:disabled):hover { color: var(--foreground); }
+.th:not(:disabled):active { transform: scale(0.97); }
+.th:disabled { opacity: 0.45; cursor: not-allowed; }
+.th--right { justify-self: end; }
+.sort { color: color-mix(in oklab, var(--foreground) 60%, var(--background)); display: inline-flex; }
+
+.trow {
+  height: var(--row-h);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 50%, var(--background));
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), box-shadow var(--duration-micro) var(--ease-out);
+}
+.trow:hover { background: var(--accent); }
+.trow:active { background: var(--secondary); }
+.trow[aria-selected="true"] { background: var(--secondary); box-shadow: inset 2px 0 0 var(--primary); }
+.tcell { font-size: var(--text-sm); line-height: var(--text-sm-lh); min-width: 0; }
+.tcell--name { display: flex; align-items: center; gap: var(--space-8); overflow: hidden; }
+.tcell--name .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tcell--right { justify-self: end; font-variant-numeric: tabular-nums; text-align: end; }
+.tcell--dim { color: var(--muted-foreground); }
+.checkbox {
+  width: var(--space-16);
+  height: var(--space-16);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: background-color var(--duration-micro) var(--ease-out), border-color var(--duration-micro) var(--ease-out);
+}
+.checkbox[aria-checked="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+.checkbox:not(:disabled):hover { border-color: var(--primary); }
+.checkbox:not(:disabled):active { transform: scale(0.97); }
+.checkbox:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.spark { display: flex; align-items: flex-end; gap: var(--space-2); height: var(--space-20); }
+.spark span { width: var(--space-4); height: var(--v); background: var(--primary); border-radius: var(--radius-sm) var(--radius-sm) 0 0; opacity: 0.62; }
+.spark span:last-child { opacity: 1; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--space-20);
+  padding-inline: var(--space-8);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+}
+.badge--alert {
+  border-color: color-mix(in oklab, var(--destructive) 32%, var(--background));
+  background: color-mix(in oklab, var(--destructive) 8%, var(--background));
+  color: var(--destructive);
+}
+
+/* Compact empty state row, desktop-scale */
+.tempty {
+  min-height: var(--space-48);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 50%, var(--background));
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  grid-template-columns: 1fr auto;
+}
+.tempty__msg { display: inline-flex; align-items: center; gap: var(--space-8); }
+
+/* ---------- Inspector ---------- */
+.inspector {
+  flex: none;
+  width: var(--inspector-w);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--background);
+}
+.inspector__head {
+  flex: none;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding-inline: var(--space-12) var(--space-8);
+  border-bottom: 1px solid var(--border);
+}
+.inspector__title {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  margin-inline-end: auto;
+}
+.inspector__body { flex: 1; min-height: 0; padding: var(--space-16); display: flex; flex-direction: column; gap: var(--space-16); overflow: hidden; }
+.fieldgroup { display: flex; flex-direction: column; gap: var(--space-8); }
+.fieldgroup__label {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+}
+.kv { display: flex; flex-direction: column; gap: 0; }
+.kv__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-12);
+  align-items: center;
+  height: var(--space-28);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 50%, var(--background));
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+}
+.kv__row:last-child { border-bottom: 0; }
+.kv__k { color: var(--muted-foreground); }
+.kv__v { font-family: var(--font-mono); font-size: var(--text-xs); line-height: var(--text-xs-lh); text-align: end; }
+.inspector__section { display: flex; flex-direction: column; gap: var(--space-8); }
+.inspector__sectitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+}
+.inspector__section .meter { margin-top: var(--space-4); }
+/* Loading state: skeleton blocks at final geometry */
+.sk { display: flex; flex-direction: column; gap: var(--space-8); }
+.sk__bar {
+  height: var(--space-12);
+  border-radius: var(--radius-sm);
+  background: var(--secondary);
+  box-shadow: inset 0 0 0 1px var(--border);
+  animation: breathe 1600ms var(--ease-out) infinite;
+}
+.sk__bar--wide { width: 100%; }
+.sk__bar--mid { width: 72%; }
+.sk__bar--short { width: 44%; }
+.sk__grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-4); }
+.sk__cell { height: var(--space-20); border-radius: var(--radius-sm); background: var(--secondary); box-shadow: inset 0 0 0 1px var(--border); }
+@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.inspector__foot {
+  flex: none;
+  padding: var(--space-12) var(--space-16);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/* ---------- Status bar ---------- */
+.statusbar {
+  flex: none;
+  height: var(--statusbar-h);
+  border-top: 1px solid var(--border);
+  background: var(--secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding-inline: var(--space-12);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+}
+.statusbar__item { display: inline-flex; align-items: center; gap: var(--space-8); }
+.statusbar__item::before { content: ""; width: var(--space-4); height: var(--space-4); border-radius: var(--radius-pill); background: var(--primary); }
+.statusbar__right { margin-inline-start: auto; display: inline-flex; align-items: center; gap: var(--space-12); }
+.statusbar .num { color: var(--foreground); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+<body>
+<!--
+  Pulse desktop workspace · DARK (S12). Dark is the default story for dev tools
+  (platform-desktop.md §1), so this board is the token re-map of
+  03-desktop-workspace.html: identical markup and component rules, only the
+  :root role values differ. Panel structure is still 1px --border only, now as
+  12% white; card/popover lightness steps carry elevation instead of shadows.
+  Loading is shown in the inspector, an inline row error and a compact empty
+  group in the table.
+-->
+<div class="app">
+  <div class="workspace">
+
+    <!-- Activity rail: 48px, 2px active indicator -->
+    <nav class="rail" aria-label="Activity">
+      <span class="rail__brand" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" focusable="false">
+          <path d="M2.5 13.5v-3M7.5 16.5V5M12.5 14.5V8.5M17.5 15.5V4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <button class="rail__btn" type="button" data-tip="Home" aria-label="Home">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+          <path d="M3.5 8.5 10 3l6.5 5.5V16a1 1 0 0 1-1 1h-3.5v-4.5h-4V17H4.5a1 1 0 0 1-1-1V8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="rail__btn" type="button" data-tip="Analytics" aria-current="true" aria-label="Analytics">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+          <path d="M3 14.5V9M7 14.5V5.5M11 14.5V11M15 14.5V3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="rail__btn" type="button" data-tip="Alerts" aria-label="Alerts">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+          <path d="M10 3a4.2 4.2 0 0 0-4.2 4.2v2.6L4.4 13h11.2L14.2 9.8V7.2A4.2 4.2 0 0 0 10 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M8.4 15.4a1.7 1.7 0 0 0 3.2 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="rail__btn" type="button" data-tip="Data sources" aria-label="Data sources">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+          <ellipse cx="10" cy="5" rx="6" ry="2.4" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M4 5v10c0 1.3 2.7 2.4 6 2.4s6-1.1 6-2.4V5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M4 10c0 1.3 2.7 2.4 6 2.4s6-1.1 6-2.4" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </button>
+      <span class="rail__spacer"></span>
+      <button class="rail__btn" type="button" data-tip="Settings" aria-label="Settings">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+          <circle cx="10" cy="10" r="2.6" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="rail__avatar" aria-label="Signed in as Rea">RE</div>
+    </nav>
+
+    <!-- Sidebar tree: 248px, 28px rows, 16px indent per level -->
+    <aside class="sidebar" aria-label="Workspace navigation">
+      <div class="sidebar__head">
+        <button class="sidebar__ws" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+            <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M5.5 10V7.5M8 10V5.5M10.5 10V8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="sidebar__wsname">Pulse Production</span>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+            <path d="M4.5 6.5 8 10l3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="tree" role="tree" aria-label="Pulse Production">
+        <div class="tree__item tree__item--l2" role="treeitem" aria-selected="false" aria-expanded="true" tabindex="-1">
+          <span class="tree__chev" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" focusable="false">
+              <path d="M4.5 6.5 8 10l3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="tree__label">Analytics</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="false" tabindex="-1">
+          <span class="tree__label">Overview</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="true" tabindex="0">
+          <span class="tree__icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" focusable="false">
+              <path d="M3 3.5h10M3 8h7M3 12.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="tree__label">Events</span>
+          <span class="tree__count">142</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="false" tabindex="-1">
+          <span class="tree__label">Funnels</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="false" tabindex="-1">
+          <span class="tree__label">Cohorts</span>
+          <span class="tree__count">6</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="false" tabindex="-1">
+          <span class="tree__label">Retention</span>
+        </div>
+
+        <div class="tree__item tree__item--l2" role="treeitem" aria-selected="false" aria-expanded="false" tabindex="-1">
+          <span class="tree__chev" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" focusable="false">
+              <path d="M6.5 4.5 10 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="tree__label">Alerts</span>
+          <span class="tree__count">3</span>
+        </div>
+        <div class="tree__item tree__item--l2" role="treeitem" aria-selected="false" aria-expanded="true" tabindex="-1">
+          <span class="tree__chev" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" focusable="false">
+              <path d="M4.5 6.5 8 10l3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="tree__label">Data sources</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="false" tabindex="-1">
+          <span class="tree__label">postgres · production</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="false" tabindex="-1">
+          <span class="tree__label">segment · web</span>
+        </div>
+        <div class="tree__item tree__item--l3" role="treeitem" aria-selected="false" aria-disabled="true" tabindex="-1">
+          <span class="tree__label">snowflake · reading…</span>
+        </div>
+      </div>
+
+      <div class="sidebar__foot">
+        <div class="sidebar__footrow">
+          <span>Events this month</span>
+          <span class="num">612M / 1B</span>
+        </div>
+        <div class="meter" role="img" aria-label="61 percent of monthly event quota used">
+          <span class="meter__fill" style="--v: 61%"></span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <div class="main__topbar">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <span class="muted">Analytics</span>
+          <span class="crumbs__sep" aria-hidden="true">/</span>
+          <span class="muted">Events</span>
+          <span class="crumbs__sep" aria-hidden="true">/</span>
+          <span class="crumbs__now">All events</span>
+        </nav>
+        <button class="palette" type="button" aria-keyshortcuts="Meta+K">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+            <circle cx="7" cy="7" r="4.2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10.2 10.2 13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="palette__text">Search events, people, dashboards</span>
+          <kbd>⌘K</kbd>
+        </button>
+        <button class="btn btn--ghost" type="button">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+            <path d="M13 8a5 5 0 1 1-1.6-3.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M13.2 2.4v3.4H9.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Refresh
+          <kbd>⌘R</kbd>
+        </button>
+        <button class="btn btn--primary" type="button">New alert</button>
+      </div>
+
+      <div class="main__body">
+        <section class="pane" aria-labelledby="pane-title">
+          <div class="pane__head">
+            <div class="pane__titlerow">
+              <h1 class="pane__title" id="pane-title">All events</h1>
+              <button class="iconbtn" type="button" aria-label="Density: compact">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                  <path d="M3 4h10M3 8h10M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button class="iconbtn" type="button" aria-label="Share view">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                  <path d="M8 10.5V2.5M8 2.5 5 5.5M8 2.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3 9.5v3a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div class="pane__toolbar">
+              <div class="segmented" role="group" aria-label="Range">
+                <button class="segmented__item" type="button" aria-pressed="false">24h</button>
+                <button class="segmented__item" type="button" aria-pressed="true">28d</button>
+                <button class="segmented__item" type="button" aria-pressed="false">90d</button>
+              </div>
+              <button class="btn btn--ghost" type="button">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                  <path d="M2.5 4h11M4.5 8h7M6.5 12h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Segments
+              </button>
+              <button class="btn btn--ghost" type="button" disabled title="No filters on this view yet">Clear filters</button>
+              <span class="pane__spacer"></span>
+              <span class="muted num">142 events · 18,402 users</span>
+            </div>
+          </div>
+
+          <div class="tablewrap">
+            <div role="table" aria-label="Events, sorted by users descending" aria-rowcount="20">
+              <div class="thead" role="row">
+                <span role="columnheader" aria-label="Select all">
+                  <button class="checkbox" type="button" aria-checked="false" aria-label="Select all rows"></button>
+                </span>
+                <span role="columnheader">Event</span>
+                <span role="columnheader">Source</span>
+                <span role="columnheader" class="th--right" aria-sort="descending">
+                  <button class="th th--right" type="button">
+                    Users
+                    <span class="sort" aria-hidden="true">
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" focusable="false">
+                        <path d="M5 1.5v7M2 6l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
+                  </button>
+                </span>
+                <span role="columnheader" class="th--right">Conv.</span>
+                <span role="columnheader">Trend</span>
+                <span role="columnheader">Status</span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="true">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="true" aria-label="Deselect project_created"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">project_created</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">4,812</span>
+                <span role="cell" class="tcell tcell--right">62.4%</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 40%"></span><span style="--v: 55%"></span><span style="--v: 48%"></span>
+                  <span style="--v: 72%"></span><span style="--v: 86%"></span><span style="--v: 100%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select invite_sent"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">invite_sent</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">2,146</span>
+                <span role="cell" class="tcell tcell--right">41.8%</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 62%"></span><span style="--v: 58%"></span><span style="--v: 66%"></span>
+                  <span style="--v: 60%"></span><span style="--v: 64%"></span><span style="--v: 61%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select dashboard_viewed"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">dashboard_viewed</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">1,904</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 70%"></span><span style="--v: 74%"></span><span style="--v: 68%"></span>
+                  <span style="--v: 66%"></span><span style="--v: 62%"></span><span style="--v: 58%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select report_shared"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">report_shared</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">1,388</span>
+                <span role="cell" class="tcell tcell--right">28.1%</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 30%"></span><span style="--v: 44%"></span><span style="--v: 52%"></span>
+                  <span style="--v: 61%"></span><span style="--v: 78%"></span><span style="--v: 92%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select checkout_started"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">checkout_started</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">1,142</span>
+                <span role="cell" class="tcell tcell--right">19.6%</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 52%"></span><span style="--v: 60%"></span><span style="--v: 56%"></span>
+                  <span style="--v: 64%"></span><span style="--v: 70%"></span><span style="--v: 66%"></span>
+                </span></span>
+                <span role="cell"><span class="badge badge--alert">
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="none" aria-hidden="true" focusable="false">
+                    <path d="M5 3v2.6M5 7.4v.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  </svg>
+                  Dropping
+                </span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select trial_started"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">trial_started</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">914</span>
+                <span role="cell" class="tcell tcell--right">15.2%</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 46%"></span><span style="--v: 50%"></span><span style="--v: 58%"></span>
+                  <span style="--v: 62%"></span><span style="--v: 60%"></span><span style="--v: 71%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select integration_connected"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">integration_connected</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">803</span>
+                <span role="cell" class="tcell tcell--right">12.4%</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 22%"></span><span style="--v: 34%"></span><span style="--v: 40%"></span>
+                  <span style="--v: 52%"></span><span style="--v: 66%"></span><span style="--v: 84%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select invite_accepted"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">invite_accepted</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">742</span>
+                <span role="cell" class="tcell tcell--right">11.8%</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 58%"></span><span style="--v: 62%"></span><span style="--v: 60%"></span>
+                  <span style="--v: 68%"></span><span style="--v: 72%"></span><span style="--v: 76%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select export_completed"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">export_completed</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">588</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 64%"></span><span style="--v: 56%"></span><span style="--v: 62%"></span>
+                  <span style="--v: 58%"></span><span style="--v: 54%"></span><span style="--v: 60%"></span>
+                </span></span>
+                <span role="cell"><span class="badge badge--alert">
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="none" aria-hidden="true" focusable="false">
+                    <path d="M5 3v2.6M5 7.4v.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  </svg>
+                  Late
+                </span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select settings_updated"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">settings_updated</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">476</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 48%"></span><span style="--v: 52%"></span><span style="--v: 50%"></span>
+                  <span style="--v: 54%"></span><span style="--v: 52%"></span><span style="--v: 56%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select alert_created"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">alert_created</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">312</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 28%"></span><span style="--v: 36%"></span><span style="--v: 44%"></span>
+                  <span style="--v: 40%"></span><span style="--v: 52%"></span><span style="--v: 68%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select docs_opened"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">docs_opened</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">244</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 34%"></span><span style="--v: 30%"></span><span style="--v: 38%"></span>
+                  <span style="--v: 36%"></span><span style="--v: 40%"></span><span style="--v: 42%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select billing_viewed"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">billing_viewed</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">186</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 20%"></span><span style="--v: 26%"></span><span style="--v: 22%"></span>
+                  <span style="--v: 30%"></span><span style="--v: 28%"></span><span style="--v: 34%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select password_reset"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">password_reset_requested</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">142</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 18%"></span><span style="--v: 22%"></span><span style="--v: 20%"></span>
+                  <span style="--v: 24%"></span><span style="--v: 22%"></span><span style="--v: 26%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select signup_completed"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">signup_completed</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">118</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 28%"></span><span style="--v: 36%"></span><span style="--v: 24%"></span>
+                  <span style="--v: 32%"></span><span style="--v: 28%"></span><span style="--v: 40%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select docs_searched"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">docs_searched</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">104</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 32%"></span><span style="--v: 40%"></span><span style="--v: 28%"></span>
+                  <span style="--v: 36%"></span><span style="--v: 32%"></span><span style="--v: 44%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select onboarding_step_viewed"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">onboarding_step_viewed</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">92</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 44%"></span><span style="--v: 52%"></span><span style="--v: 40%"></span>
+                  <span style="--v: 48%"></span><span style="--v: 44%"></span><span style="--v: 56%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select team_created"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">team_created</span></span>
+                <span role="cell" class="tcell tcell--dim">postgres · production</span>
+                <span role="cell" class="tcell tcell--right">78</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 36%"></span><span style="--v: 44%"></span><span style="--v: 32%"></span>
+                  <span style="--v: 40%"></span><span style="--v: 36%"></span><span style="--v: 48%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="trow" role="row" aria-selected="false">
+                <span role="cell"><button class="checkbox" type="button" aria-checked="false" aria-label="Select report_exported"></button></span>
+                <span role="cell" class="tcell tcell--name"><span class="mono">report_exported</span></span>
+                <span role="cell" class="tcell tcell--dim">segment · web</span>
+                <span role="cell" class="tcell tcell--right">64</span>
+                <span role="cell" class="tcell tcell--right">—</span>
+                <span role="cell"><span class="spark" aria-hidden="true">
+                  <span style="--v: 40%"></span><span style="--v: 48%"></span><span style="--v: 36%"></span>
+                  <span style="--v: 44%"></span><span style="--v: 40%"></span><span style="--v: 52%"></span>
+                </span></span>
+                <span role="cell"><span class="badge">Tracked</span></span>
+              </div>
+
+              <div class="tempty" role="row">
+                <span role="cell" class="tempty__msg">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                    <rect x="2.5" y="2.5" width="11" height="11" rx="3" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 2.2"/>
+                  </svg>
+                  No custom events yet — 0 configured for this workspace
+                </span>
+                <button class="btn btn--ghost" type="button">Add custom event</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Inspector: loading state at final geometry -->
+        <aside class="inspector" aria-label="Event detail">
+          <div class="inspector__head">
+            <span class="inspector__title">project_created</span>
+            <button class="iconbtn" type="button" aria-label="Close detail pane">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="inspector__body">
+            <div class="fieldgroup">
+              <span class="fieldgroup__label">Volume · 28 days</span>
+              <div class="kv">
+                <div class="kv__row"><span class="kv__k">Events</span><span class="kv__v num">4,812</span></div>
+                <div class="kv__row"><span class="kv__k">Unique users</span><span class="kv__v num">3,904</span></div>
+                <div class="kv__row"><span class="kv__k">Per user</span><span class="kv__v num">1.23</span></div>
+                <div class="kv__row"><span class="kv__k">Last seen</span><span class="kv__v">14:22 UTC</span></div>
+              </div>
+            </div>
+
+            <div class="fieldgroup">
+              <span class="fieldgroup__label">Properties</span>
+              <div class="kv">
+                <div class="kv__row"><span class="kv__k">project_id</span><span class="kv__v">uuid</span></div>
+                <div class="kv__row"><span class="kv__k">template</span><span class="kv__v">string</span></div>
+                <div class="kv__row"><span class="kv__k">is_first_project</span><span class="kv__v">boolean</span></div>
+                <div class="kv__row"><span class="kv__k">plan</span><span class="kv__v">enum</span></div>
+              </div>
+            </div>
+
+            <div class="inspector__section" aria-busy="true">
+              <span class="inspector__sectitle">Retention curve</span>
+              <div class="sk" role="status" aria-label="Computing retention curve">
+                <span class="sk__bar sk__bar--wide"></span>
+                <span class="sk__bar sk__bar--mid"></span>
+                <span class="sk__bar sk__bar--wide"></span>
+                <span class="sk__bar sk__bar--short"></span>
+                <span class="sk__bar sk__bar--mid"></span>
+              </div>
+            </div>
+
+            <div class="fieldgroup">
+              <span class="fieldgroup__label">Breakdown by plan</span>
+              <div class="kv">
+                <div class="kv__row"><span class="kv__k">Scale</span><span class="kv__v num">2,104</span></div>
+                <div class="kv__row"><span class="kv__k">Pro</span><span class="kv__v num">1,506</span></div>
+                <div class="kv__row"><span class="kv__k">Free</span><span class="kv__v num">1,202</span></div>
+              </div>
+            </div>
+
+            <div class="fieldgroup">
+              <span class="fieldgroup__label">Weekly cohorts</span>
+              <div class="sk__grid" aria-hidden="true">
+                <span class="sk__cell"></span><span class="sk__cell"></span><span class="sk__cell"></span>
+                <span class="sk__cell"></span><span class="sk__cell"></span><span class="sk__cell"></span>
+                <span class="sk__cell"></span><span class="sk__cell"></span><span class="sk__cell"></span>
+                <span class="sk__cell"></span><span class="sk__cell"></span><span class="sk__cell"></span>
+                <span class="sk__cell"></span><span class="sk__cell"></span><span class="sk__cell"></span>
+              </div>
+              <p class="muted" style="font-size: var(--text-xs); line-height: var(--text-xs-lh); text-wrap: pretty">Properties inferred from the last 28 days. Recompute takes about 4 seconds.</p>
+            </div>
+          </div>
+          <div class="inspector__foot">
+            <button class="btn btn--ghost" type="button">
+              Export
+              <kbd>⇧⌘E</kbd>
+            </button>
+            <button class="btn btn--primary" type="button">Create funnel</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <footer class="statusbar">
+    <span class="statusbar__item">Synced 4s ago</span>
+    <span>612M events this month · <span class="num">99.99%</span> ingest uptime</span>
+    <span class="statusbar__right">
+      <span class="num">p95 38ms</span>
+      <span>v2.14.0</span>
+    </span>
+  </footer>
+</div>
+</body>
+</html>

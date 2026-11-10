@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Molino — Suscripción · Elegí molienda y frecuencia</title>
+<style>
+/* ============================================================
+   TOKEN BLOCK — byte-identical in 01-tienda.html and
+   02-suscripcion.html. Semantic roles (E1), 4px ramp (E7),
+   Direction Contract: Editorial / Print (design/molino-cafe/).
+   ============================================================ */
+:root {
+  /* Paper, ink, one red. Roles only — no component ever names a raw color. */
+  --background: #faf7f2;
+  --foreground: #1a1815;
+  --card: #faf7f2;
+  --card-foreground: #1a1815;
+  --popover: #faf7f2;
+  --popover-foreground: #1a1815;
+  --primary: #7f1d1d;
+  --primary-foreground: #faf7f2;
+  --primary-hover: #6a1818;
+  --secondary: #f2ede4;
+  --secondary-foreground: #1a1815;
+  --muted: #f2ede4;
+  --muted-foreground: #5f574d;
+  --accent: #ebe4d8;
+  --accent-foreground: #1a1815;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #faf7f2;
+  --border: rgb(26 24 21 / 0.6);
+  --border-faint: rgb(26 24 21 / 0.2);
+  --input: rgb(26 24 21 / 0.6);
+  --ring: #1a1815;
+
+  /* Radius: near-straight, one token + derivatives */
+  --radius: 0.125rem;
+  --radius-sm: calc(var(--radius) - 1px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-pill: 9999px;
+
+  /* Type: one serif for the page, one grotesque for printed labels */
+  --font-serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-label: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --text-xs: 12px;   --text-xs-lh: 16px;
+  --text-sm: 14px;   --text-sm-lh: 20px;
+  --text-base: 16px; --text-base-lh: 24px;
+  --text-lg: 18px;   --text-lg-lh: 28px;
+  --text-xl: 20px;   --text-xl-lh: 28px;
+  --text-2xl: 24px;  --text-2xl-lh: 32px;
+  --text-3xl: 30px;  --text-3xl-lh: 36px;
+  --text-4xl: 36px;  --text-4xl-lh: 40px;
+  --text-5xl: 48px;  --text-5xl-lh: 1;
+  --text-6xl: 60px;  --text-6xl-lh: 1;
+  --text-7xl: 72px;  --text-7xl-lh: 1;
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-label: 0.14em;
+  --tracking-label-tight: 0.1em;
+  --measure: 65ch;
+  --measure-narrow: 52ch;
+
+  /* Spacing: the 4px ramp only */
+  --space-1: 1px;   --space-2: 2px;   --space-4: 4px;   --space-8: 8px;
+  --space-12: 12px; --space-16: 16px; --space-20: 20px; --space-24: 24px;
+  --space-32: 32px; --space-40: 40px; --space-48: 48px; --space-64: 64px;
+  --space-80: 80px; --space-96: 96px; --space-128: 128px;
+
+  /* Layout */
+  --container-max: 1248px;
+  --plate-w: 420px;
+  --summary-w: 416px;
+  --board-w: 1440px;
+  --board-h: 900px;
+
+  /* Motion: fades only, 300–400ms; micro-states at 180ms */
+  --duration-hover: 180ms;
+  --duration-fade: 360ms;
+  --stagger: 60ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, p, dl, dd, ol, fieldset, legend { margin: 0; }
+ol { padding: 0; list-style: none; }
+fieldset { padding: 0; border: 0; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+button, input { font: inherit; }
+
+::selection { background: var(--accent); color: var(--foreground); }
+
+:where(a, button, input, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-32);
+}
+
+.label {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.figures {
+  font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.skip {
+  position: absolute;
+  left: var(--space-16);
+  top: var(--space-8);
+  z-index: 40;
+  padding: var(--space-8) var(--space-12);
+  background: var(--foreground);
+  color: var(--background);
+  border-radius: var(--radius-md);
+  font-family: var(--font-label);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  transform: translateY(calc(-1 * var(--space-48)));
+}
+.skip:focus-visible { transform: none; }
+
+/* ---------- Masthead — same nameplate as board 01 ---------- */
+.masthead {
+  border-bottom: 1px solid var(--border);
+  animation: printed-in var(--duration-fade) var(--ease-out) both;
+}
+.masthead__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-32);
+  padding-block: var(--space-24);
+}
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-12);
+  text-decoration: none;
+  justify-self: start;
+}
+.wordmark__name {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  line-height: var(--text-2xl-lh);
+  letter-spacing: var(--tracking-label-tight);
+  text-transform: uppercase;
+}
+.masthead__nav { display: flex; align-items: center; gap: var(--space-24); }
+.navlink {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  padding-block: var(--space-4);
+  border-bottom: 1px solid transparent;
+  transition: color var(--duration-hover) var(--ease-out),
+              border-color var(--duration-hover) var(--ease-out);
+}
+.navlink:hover { color: var(--primary); border-color: var(--border); }
+.navlink:active { color: var(--primary-hover); }
+.navlink.is-current { border-color: var(--foreground); }
+.navlink[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+.masthead__meta { justify-self: end; text-align: right; }
+
+/* ---------- Subscription: plan at left, order plate at right ---------- */
+.subscribe { padding-block: var(--space-96); }
+.subscribe__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--summary-w);
+  gap: var(--space-96);
+  align-items: start;
+}
+.plan { animation: printed-in var(--duration-fade) var(--ease-out) both; }
+
+.crumbs {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  letter-spacing: var(--tracking-label-tight);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.crumbs a {
+  text-decoration: none;
+  transition: color var(--duration-hover) var(--ease-out);
+}
+.crumbs a:hover { color: var(--foreground); text-decoration: underline; }
+.crumbs [aria-current="page"] { color: var(--foreground); }
+
+.plan__title {
+  margin-top: var(--space-32);
+  font-size: var(--text-6xl);
+  line-height: var(--text-6xl-lh);
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--weight-regular);
+}
+.plan__deck {
+  margin-top: var(--space-32);
+  max-width: var(--measure);
+  font-size: var(--text-lg);
+  line-height: var(--text-lg-lh);
+  text-wrap: pretty;
+}
+/* A printed drop cap: the page's one ornamental move. */
+.plan__deck::first-letter {
+  float: left;
+  font-size: var(--text-5xl);
+  line-height: 0.85;
+  padding-right: var(--space-8);
+  padding-top: var(--space-4);
+}
+
+.form__title {
+  margin-top: var(--space-48);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-2xl);
+  line-height: var(--text-2xl-lh);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-tight);
+}
+
+.group { margin-top: var(--space-32); }
+.group__legend {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-16);
+  width: 100%;
+  padding: 0;
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.group__hint {
+  margin-left: auto;
+  font-family: var(--font-serif);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+  color: var(--muted-foreground);
+}
+
+.choices { margin-top: var(--space-12); }
+.choices--2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-32); }
+.choices--3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--space-24); }
+
+/* A ballot, not a card: hairline rule, mark, name, note. */
+.choice {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-16);
+  align-items: start;
+  padding-block: var(--space-16);
+  border-top: 1px solid var(--border-faint);
+  cursor: pointer;
+  transition: background-color var(--duration-hover) var(--ease-out);
+}
+.choice:hover { background-color: var(--accent); }
+.choice:active { background-color: var(--secondary); }
+.choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+.choice__mark {
+  display: grid;
+  place-items: center;
+  width: var(--space-20);
+  height: var(--space-20);
+  margin-top: var(--space-2);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-sm);
+  background: var(--background);
+  transition: border-color var(--duration-hover) var(--ease-out),
+              background-color var(--duration-hover) var(--ease-out);
+}
+.choice__mark::after {
+  content: "";
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: calc(var(--radius-sm) / 2);
+  background: var(--foreground);
+  opacity: 0;
+  transition: opacity var(--duration-hover) var(--ease-out);
+}
+.choice:hover .choice__mark { border-color: var(--foreground); }
+.choice input:checked + .choice__mark::after { opacity: 1; }
+.choice input:focus-visible + .choice__mark {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.choice__text { display: block; }
+.choice__name {
+  display: block;
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+}
+.choice__note {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.choice.is-disabled { cursor: not-allowed; opacity: 0.45; }
+.choice.is-disabled:hover,
+.choice.is-disabled:active { background-color: transparent; }
+.choice.is-disabled .choice__mark { border-style: solid; border-color: var(--border); }
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-32);
+  margin-top: var(--space-32);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--border);
+}
+.field input {
+  width: 100%;
+  margin-top: var(--space-8);
+  padding-block: var(--space-8);
+  border: 0;
+  border-bottom: 1px solid var(--input);
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  line-height: var(--text-lg-lh);
+  transition: border-color var(--duration-hover) var(--ease-out);
+}
+.field input:hover { border-color: var(--foreground); }
+.field input:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.field input:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.check {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-16);
+  align-items: start;
+  margin-top: var(--space-24);
+  padding-top: var(--space-16);
+  border-top: 1px solid var(--border-faint);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  cursor: pointer;
+}
+.check input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
+.check:hover .choice__mark { border-color: var(--foreground); }
+.check input:checked + .choice__mark::after { opacity: 1; }
+.check input:focus-visible + .choice__mark {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.check__aside { color: var(--muted-foreground); }
+
+.plan__note {
+  margin-top: var(--space-24);
+  max-width: var(--measure-narrow);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+
+/* ---------- Order plate: printed summary, one red action ---------- */
+.summary {
+  animation: printed-in var(--duration-fade) var(--ease-out) both;
+  animation-delay: var(--stagger);
+}
+.summary__plate {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-32);
+}
+.summary__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding-bottom: var(--space-16);
+  border-bottom: 1px solid var(--border);
+}
+.summary__title {
+  font-size: var(--text-xl);
+  line-height: var(--text-xl-lh);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-tight);
+}
+.summary__rows dd,
+.summary__math dd {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  text-align: right;
+}
+.srow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-16);
+  align-items: baseline;
+  padding-block: var(--space-12);
+  border-bottom: 1px solid var(--border-faint);
+}
+/* One rule per group boundary, never two hairlines 12px apart. */
+.summary__rows .srow:last-child { border-bottom: 0; }
+.summary__math {
+  margin-top: 0;
+  border-top: 1px solid var(--border);
+}
+.summary__math .srow:last-child { border-bottom: 0; }
+.summary__math dt { font-size: var(--text-sm); line-height: var(--text-sm-lh); }
+.summary__math dd { color: var(--foreground); }
+.summary__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-top: var(--space-16);
+  padding-top: var(--space-16);
+  border-top: 1px solid var(--border);
+}
+.summary__price {
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  letter-spacing: var(--tracking-tight);
+  color: var(--primary);
+}
+.cta {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-24);
+  padding-block: var(--space-16);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: var(--font-label);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label-tight);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--duration-hover) var(--ease-out),
+              border-color var(--duration-hover) var(--ease-out),
+              transform var(--duration-hover) var(--ease-out);
+}
+.cta:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.cta:active { transform: scale(0.97); }
+.cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+.summary__small {
+  margin-top: var(--space-16);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+}
+
+/* ---------- Designed states for the order plate ---------- */
+.states { margin-top: var(--space-32); }
+.states__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid var(--border);
+}
+.state {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: var(--space-16);
+  align-items: start;
+  padding-block: var(--space-16);
+  border-bottom: 1px solid var(--border-faint);
+}
+.state__body > * { display: block; }
+.state__line { font-size: var(--text-base); line-height: var(--text-base-lh); }
+.state__note {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.state__tag { padding-top: var(--space-4); }
+.state__tag--error { color: var(--primary); }
+.state__retry { color: var(--foreground); text-decoration-color: var(--border); }
+.state__retry:hover { text-decoration-color: var(--foreground); }
+
+.skeleton {
+  height: var(--space-12);
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  margin-bottom: var(--space-8);
+}
+.skeleton--lg { width: 64%; }
+.skeleton--sm { width: 40%; }
+
+/* ---------- Colophon ---------- */
+.colophon { border-top: 1px solid var(--border); padding-block: var(--space-48); }
+.colophon__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+}
+.colophon__row a { text-decoration-color: var(--border); }
+.colophon__row a:hover { text-decoration-color: var(--foreground); }
+.colophon__legal {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-24);
+  margin-top: var(--space-40);
+  padding-top: var(--space-16);
+  border-top: 1px solid var(--border-faint);
+}
+
+/* ---------- Motion ---------- */
+@keyframes printed-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------- Below the 1440 board ---------- */
+@media (max-width: 1180px) {
+  .container { padding-inline: var(--space-24); }
+  .masthead__inner { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-12); }
+  .masthead__meta { grid-column: 1 / -1; justify-self: start; text-align: left; }
+  .subscribe__grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-64); }
+  .plan__title { font-size: var(--text-5xl); }
+  .choices--2, .choices--3, .fields { grid-template-columns: minmax(0, 1fr); }
+  .colophon__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-16); }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#resumen">Ir al resumen del pedido</a>
+
+<header class="masthead">
+  <div class="container masthead__inner">
+    <a class="wordmark" href="01-tienda.html" aria-label="Molino, tostaduría en Colegiales">
+      <span class="wordmark__name">Molino</span>
+    </a>
+    <nav class="masthead__nav" aria-label="Secciones">
+      <a class="navlink" href="01-tienda.html">Tienda</a>
+      <a class="navlink is-current" href="02-suscripcion.html" aria-current="page">Suscripción</a>
+      <a class="navlink" href="#taller">Taller</a>
+      <a class="navlink" href="#diario">Diario</a>
+    </nav>
+    <p class="label masthead__meta">Buenos Aires · jueves 12 de noviembre</p>
+  </div>
+</header>
+
+<main class="subscribe">
+  <div class="container subscribe__grid">
+
+    <div class="plan">
+      <nav class="crumbs" aria-label="Ubicación">
+        <a href="01-tienda.html">Tienda</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Suscripción</span>
+      </nav>
+
+      <h1 class="plan__title">Cuatro jueves,<br>una etiqueta.</h1>
+      <p class="plan__deck">Cada mes tostamos cuatro lotes, uno por semana. Vos elegís
+        la molienda y la frecuencia; nosotros imprimimos la fecha de tueste y la nota
+        de cata en la etiqueta, y el jueves lo tenés en la puerta. Sin contrato: se
+        pausa o se cancela desde el correo de confirmación.</p>
+
+      <form class="form" action="#resumen" method="get">
+        <h2 class="form__title">Armá la tuya</h2>
+
+        <fieldset class="group">
+          <legend class="group__legend">
+            Molienda
+            <span class="group__hint">Se muele el mismo jueves, no antes.</span>
+          </legend>
+          <div class="choices choices--2">
+            <label class="choice">
+              <input type="radio" name="molienda" value="entero" checked>
+              <span class="choice__mark" aria-hidden="true"></span>
+              <span class="choice__text">
+                <span class="choice__name">Grano entero</span>
+                <span class="choice__note">Lo molés vos, justo antes de colar.</span>
+              </span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="molienda" value="filtro">
+              <span class="choice__mark" aria-hidden="true"></span>
+              <span class="choice__text">
+                <span class="choice__name">Filtro</span>
+                <span class="choice__note">Medio, para V60, Chemex y goteo.</span>
+              </span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="molienda" value="espresso">
+              <span class="choice__mark" aria-hidden="true"></span>
+              <span class="choice__text">
+                <span class="choice__name">Espresso</span>
+                <span class="choice__note">Fino, para máquina de casa.</span>
+              </span>
+            </label>
+            <label class="choice is-disabled">
+              <input type="radio" name="molienda" value="prensa" disabled>
+              <span class="choice__mark" aria-hidden="true"></span>
+              <span class="choice__text">
+                <span class="choice__name">Prensa francesa</span>
+                <span class="choice__note">Sin molienda gruesa hasta el lote 48.</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend class="group__legend">
+            Frecuencia
+            <span class="group__hint">Todo llega un jueves, de 9 a 19.</span>
+          </legend>
+          <div class="choices choices--3">
+            <label class="choice">
+              <input type="radio" name="frecuencia" value="semanal" checked>
+              <span class="choice__mark" aria-hidden="true"></span>
+              <span class="choice__text">
+                <span class="choice__name">Cada jueves</span>
+                <span class="choice__note figures">4 entregas · $ 36.400</span>
+              </span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="frecuencia" value="quincenal">
+              <span class="choice__mark" aria-hidden="true"></span>
+              <span class="choice__text">
+                <span class="choice__name">Cada 15 días</span>
+                <span class="choice__note figures">2 entregas · $ 19.700</span>
+              </span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="frecuencia" value="mensual">
+              <span class="choice__mark" aria-hidden="true"></span>
+              <span class="choice__text">
+                <span class="choice__name">Una vez al mes</span>
+                <span class="choice__note figures">1 entrega · $ 12.400</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="fields">
+          <div class="field">
+            <label class="label" for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" value="Ana Pregliasco"
+                   autocomplete="name">
+          </div>
+          <div class="field">
+            <label class="label" for="correo">Correo</label>
+            <input type="email" id="correo" name="correo" value="ana@correo.com"
+                   autocomplete="email">
+          </div>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" name="nota" checked>
+          <span class="choice__mark" aria-hidden="true"></span>
+          <span>Sumar una nota manuscrita en el envío
+            <span class="check__aside">(sin cargo)</span></span>
+        </label>
+
+        <p class="plan__note">Envío los jueves en CABA y GBA. Retiro sin cargo en
+          Cochabamba 1874, de jueves a domingo de 9 a 19.</p>
+      </form>
+    </div>
+
+    <aside class="summary" id="resumen" aria-labelledby="summary-title">
+      <div class="summary__plate">
+        <div class="summary__head">
+          <h2 class="summary__title" id="summary-title">Resumen del pedido</h2>
+          <span class="label figures">N° 4221</span>
+        </div>
+        <dl class="summary__rows">
+          <div class="srow">
+            <dt class="label">Tueste</dt>
+            <dd>La Esperanza · Chiapas</dd>
+          </div>
+          <div class="srow">
+            <dt class="label">Molienda</dt>
+            <dd>Grano entero</dd>
+          </div>
+          <div class="srow">
+            <dt class="label">Frecuencia</dt>
+            <dd>Cada jueves</dd>
+          </div>
+          <div class="srow">
+            <dt class="label">Primera entrega</dt>
+            <dd>jueves 12 de noviembre</dd>
+          </div>
+        </dl>
+        <dl class="summary__math">
+          <div class="srow">
+            <dt>4 × 250 g</dt>
+            <dd class="figures">$ 39.200</dd>
+          </div>
+          <div class="srow">
+            <dt>Descuento suscripción</dt>
+            <dd class="figures">− $ 2.800</dd>
+          </div>
+        </dl>
+        <div class="summary__total">
+          <span class="label">Total por mes</span>
+          <span class="summary__price figures">$ 36.400</span>
+        </div>
+        <button class="cta" type="submit">Empezar mi suscripción</button>
+        <p class="summary__small">El primer cobro se hace el jueves 12. Podés pausar o
+          cancelar desde el correo de confirmación, sin llamar a nadie.</p>
+      </div>
+
+      <section class="states" aria-labelledby="states-title">
+        <div class="states__head">
+          <h2 class="label" id="states-title">Estados del resumen</h2>
+          <span class="label">vacío · cargando · error</span>
+        </div>
+        <ol class="states__list">
+          <li class="state">
+            <span class="label state__tag">Vacío</span>
+            <div class="state__body">
+              <span class="state__line figures">—</span>
+              <p class="state__note">Todavía no elegiste molienda: el total se calcula
+                al elegir una opción.</p>
+            </div>
+          </li>
+          <li class="state">
+            <span class="label state__tag">Cargando</span>
+            <div class="state__body">
+              <span class="skeleton skeleton--lg" aria-hidden="true"></span>
+              <span class="skeleton skeleton--sm" aria-hidden="true"></span>
+              <p class="state__note">Calculando el envío a CABA…</p>
+            </div>
+          </li>
+          <li class="state">
+            <span class="label state__tag state__tag--error">Error</span>
+            <div class="state__body">
+              <span class="state__line">No pudimos calcular el envío.</span>
+              <p class="state__note"><a class="state__retry" href="#reintentar">Reintentar</a>
+                o retirar en el taller, jueves de 9 a 19.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="colophon">
+  <div class="container">
+    <div class="colophon__row">
+      <p class="label">Molino · Cochabamba 1874 · Colegiales, Buenos Aires</p>
+      <p class="label">Jueves a domingo · 9 a 19</p>
+      <p class="label"><a href="#instagram">Instagram</a> · <a href="#whatsapp">WhatsApp</a></p>
+      <p class="label">Suscripción — folio 2</p>
+    </div>
+    <p class="label colophon__legal">
+      <span>© 2026 Molino. Tostado en el taller, a cuatro cuadras de la estación.</span>
+      <span>Impreso en papel de 90 g</span>
+    </p>
+  </div>
+</footer>
+</body>
+</html>

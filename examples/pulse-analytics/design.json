@@ -1,0 +1,42 @@
+{
+  "title": "Pulse Analytics — platform coverage",
+  "brief": "Pulse is a professional product-analytics SaaS. Five artboards prove the gentle-design-skill extension across the surfaces it claims: a web marketing landing (1440x900), an iOS-like mobile overview screen (390x844) and a desktop-class events workspace (1440x900), plus dark re-maps of the mobile and desktop boards (390x844, 1440x900) that change token values only. The three light boards share one copy-identical semantic token block — near-monochrome, one deep-teal accent, 1px borders instead of shadows, the documented type ramp, 4px spacing only. The two dark boards re-map exactly those eleven roles, with the mapping rules and measured AA pairs in skill/gentle-design-skill/references/dark-mode.md.",
+  "artboards": [
+    {
+      "file": "01-landing-web.html",
+      "title": "Web · marketing landing",
+      "tradeoff": "Left-aligned hero with a real product panel (funnel bars) and one masked dot-grid texture; sections alternate skeleton (split hero, quiet logo row, split feature, full-bleed metrics band, inverted CTA band, 4-column footer) instead of a 3-card grid. Air is 128/96px, so the page scrolls past the 900px board — declared viewport, not page height. The logo row keeps full --muted-foreground instead of 40-50% opacity so AA text contrast is provable. Loading/empty states are out of scope for static marketing copy; the product panel carries a disabled-action state.",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "02-mobile-overview.html",
+      "title": "Mobile · overview screen",
+      "tradeoff": "iOS-like type system at ramp steps (the 22px M3/iOS title collapses to the 20/28 step, see tokens.md) with M3-style 56px app bar and tab bar. No FAB on purpose: the screen is read-only monitoring, so the single create action belongs in Alerts - documented in the markup. Density buys the states instead: the second KPI card is a skeleton at final geometry (loading) and the sync banner is a real error state with a 44x44 retry. Empty state is declared out of scope (a top-N summary cannot be empty; the Events screen owns it). 4 tab destinations, all targets 44-48px.",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "03-desktop-workspace.html",
+      "title": "Desktop · events workspace",
+      "tradeoff": "Light theme by intent (the surface is 90% dense numeric reading, a BI convention rather than a code editor); panes separate by 1px borders with zero shadows. Four panes: 48px activity rail with 2px indicator and delayed tooltips, 248px tree, dense 32px-row table with sticky header / aria-sort indicator / right-aligned tabular numerics, and a 320px inspector showing the loading state at final geometry. Shortcut chips are three (palette, refresh, export) to satisfy the platform gate's '>=3 repeated actions' alongside the brief's palette hint row. The compact empty group row keeps the empty state at desktop scale instead of a full-screen takeover.",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "04-mobile-dark.html",
+      "title": "Mobile · overview screen (dark)",
+      "tradeoff": "Token-only dark re-map of 02: identical markup and identical component CSS, only the eleven role values change (references/dark-mode.md §1). Dark is pinned in :root plus data-theme=\"dark\" so the screenshot does not depend on the viewer's OS; the runtime rule is @media (prefers-color-scheme: dark) with the same declarations, and color-scheme: dark is declared. Surfaces rise by lightness (background 0.168 -> card 0.246 -> popover 0.278), --border becomes 12% white, --input climbs to 38% to hold WCAG 1.4.11's 3:1 on control boundaries, and --primary inverts to a light teal pill with a dark foreground (10.86:1). Measured AA on the dark pairs: body 16.4:1, muted 8.0:1 on canvas / 6.8:1 on card / 5.7:1 on a wash, status red 7.1:1 on canvas / 6.5:1 on its own 8% wash, focus ring 13.3:1. Preserved from the light board: hover / focus-visible (2px ring, offset 2px) / active / disabled, the skeleton loading state, the error banner, and the prefers-reduced-motion block (verified: animations flatten to 1ms).",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "05-desktop-dark.html",
+      "title": "Desktop · events workspace (dark)",
+      "tradeoff": "Dark is the default story for dev tools (platform-desktop.md §1), so this is the primary desktop reading and also a token-only re-map of 03 — geometry and DOM verified identical to the light board, zero component changes. Elevation is lightness, not shadow: panes and the canvas sit at L 0.168, cards at 0.246, popover the top of the ladder at 0.278, and every divider is 12% white (the derived 50% hairlines composite to ~6% white). The pressed segment chip reads lighter than its 6% wash track — the ladder was fixed in tokens, not in the component. Chrome text (14px muted) measures 7.05:1, 12px labels 5.7-8.0:1, the status red 6.5:1 on its wash, the primary button 10.86:1, the focus ring 13.3:1. The breadcrumb separator (--input, 3.56:1) is aria-hidden decoration between links, not body copy. Deep shadows plus a 1px white ring replace light-theme alphas on floating layers.",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "feature": "odd/tasks/gentle-design-skill.md"
+}

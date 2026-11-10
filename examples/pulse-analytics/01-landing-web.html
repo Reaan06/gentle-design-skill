@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Pulse — Product analytics for teams that ship weekly</title>
+<style>
+/* ============================================================
+   TOKEN BLOCK — identical in all three Pulse artboards.
+   Semantic roles: shadcn/ui convention (evidence E1). Ramp: E7.
+   ============================================================ */
+:root {
+  /* Semantic color roles */
+  --background: #ffffff;
+  --foreground: #0b1210;
+  --card: #ffffff;
+  --card-foreground: #0b1210;
+  --popover: #ffffff;
+  --popover-foreground: #0b1210;
+  --primary: #0b5f4f;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f6f5;
+  --secondary-foreground: #0b1210;
+  --muted: #f3f6f5;
+  --muted-foreground: #596663;
+  --accent: #eaf0ee;
+  --accent-foreground: #0b1210;
+  --destructive: #a5231b;
+  --destructive-foreground: #ffffff;
+  --border: #e1e6e4;
+  --input: #7f8c88;
+  --ring: #0b5f4f;
+
+  /* Radius: one token + derivatives */
+  --radius: 0.625rem;
+  --texture-stencil: rgb(0 0 0); /* mask stencil color (luminance mask, not painted) */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-pill: 9999px;
+
+  /* Type ramp: Tailwind v4 paired scale (E7) */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --text-xs: 12px;   --text-xs-lh: 16px;
+  --text-sm: 14px;   --text-sm-lh: 20px;
+  --text-base: 16px; --text-base-lh: 24px;
+  --text-lg: 18px;   --text-lg-lh: 28px;
+  --text-xl: 20px;   --text-xl-lh: 28px;
+  --text-2xl: 24px;  --text-2xl-lh: 32px;
+  --text-3xl: 30px;  --text-3xl-lh: 36px;
+  --text-4xl: 36px;  --text-4xl-lh: 40px;
+  --text-5xl: 48px;  --text-5xl-lh: 1;
+  --text-6xl: 60px;  --text-6xl-lh: 1;
+  --text-7xl: 72px;  --text-7xl-lh: 1;
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-loose: 0.06em;
+  --measure: 65ch;
+
+  /* Spacing: 4px ramp (E7, --spacing: .25rem) */
+  --space-1: 1px;    --space-2: 2px;    --space-4: 4px;    --space-8: 8px;
+  --space-12: 12px;  --space-16: 16px;  --space-20: 20px;  --space-24: 24px;
+  --space-28: 28px;  --space-32: 32px;  --space-36: 36px;  --space-40: 40px;
+  --space-44: 44px;  --space-48: 48px;  --space-56: 56px;  --space-64: 64px;
+  --space-80: 80px;  --space-96: 96px;  --space-128: 128px;
+
+  /* Layout dimensions per platform */
+  --container-max: 1216px;
+  --content-max: 1120px;
+  --hero-panel-w: 480px;
+  --nav-h: 64px;
+  --board-w: 1440px;
+  --board-h: 900px;
+  --frame-w: 390px;
+  --frame-h: 844px;
+  --safe-top: 47px;
+  --safe-bottom: 34px;
+  --appbar-h: 56px;
+  --tabbar-h: 56px;
+  --hit-min: 44px;
+  --rail-w: 48px;
+  --sidebar-w: 248px;
+  --inspector-w: 320px;
+  --topbar-h: 48px;
+  --statusbar-h: 24px;
+  --row-h: 32px;
+  --row-tap-h: 64px;
+
+  /* Elevation: floating layers only, alpha <= .12 */
+  --shadow-popover: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-modal: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+
+  /* Motion */
+  --duration-micro: 120ms;
+  --duration-state: 180ms;
+  --duration-enter: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.25, 1);
+  --stagger: 60ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  font-weight: var(--weight-regular);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, p, ul, ol, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-48);
+}
+
+.muted { color: var(--muted-foreground); }
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+.eyebrow {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.skip {
+  position: absolute;
+  left: var(--space-16);
+  top: var(--space-8);
+  z-index: 40;
+  padding: var(--space-8) var(--space-12);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  transform: translateY(calc(-1 * var(--space-48)));
+}
+.skip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; transform: none; }
+
+/* ---------- Buttons: full state matrix (hover / focus / active / disabled) ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  height: var(--space-40);
+  padding-inline: var(--space-16);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-micro) var(--ease-out),
+    border-color var(--duration-micro) var(--ease-out),
+    color var(--duration-micro) var(--ease-out),
+    transform var(--duration-micro) var(--ease-out),
+    opacity var(--duration-micro) var(--ease-out);
+}
+.btn--lg { height: var(--space-48); padding-inline: var(--space-24); font-size: var(--text-base); }
+.btn--sm { height: var(--space-32); padding-inline: var(--space-12); font-size: var(--text-sm); }
+.btn--primary { background: var(--primary); color: var(--primary-foreground); }
+.btn--primary:not(:disabled):hover { background: color-mix(in oklab, var(--primary) 86%, var(--foreground)); }
+.btn--primary:not(:disabled):active { transform: scale(0.97); background: var(--primary); }
+.btn--ghost { background: transparent; color: var(--foreground); border-color: var(--border); }
+.btn--ghost:not(:disabled):hover { background: var(--accent); border-color: var(--input); }
+.btn--ghost:not(:disabled):active { transform: scale(0.97); background: var(--secondary); }
+.btn--inverse { background: var(--background); color: var(--foreground); }
+.btn--inverse:not(:disabled):hover { background: color-mix(in oklab, var(--background) 84%, var(--primary)); }
+.btn--inverse:not(:disabled):active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---------- Nav ---------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: var(--nav-h);
+  background: color-mix(in oklab, var(--background) 88%, transparent);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(var(--space-12));
+}
+.nav__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-32);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+.brand__mark { color: var(--primary); display: block; }
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-inline-start: var(--space-16);
+}
+.nav__link {
+  display: inline-flex;
+  align-items: center;
+  height: var(--space-32);
+  padding-inline: var(--space-12);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+  transition: background-color var(--duration-micro) var(--ease-out), color var(--duration-micro) var(--ease-out);
+}
+.nav__link:hover { background: var(--accent); color: var(--foreground); }
+.nav__link:active { transform: scale(0.97); background: var(--secondary); }
+.nav__actions { display: flex; align-items: center; gap: var(--space-8); margin-inline-start: auto; }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; padding-block: var(--space-128) var(--space-96); overflow: clip; }
+.hero__texture {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: var(--space-24) var(--space-24);
+  color: var(--border);
+  opacity: 0.55;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 46% 52% at 80% 14%, var(--texture-stencil) 8%, transparent 88%);
+  -webkit-mask-image: radial-gradient(ellipse 46% 52% at 80% 14%, var(--texture-stencil) 8%, transparent 88%);
+}
+.hero__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--hero-panel-w);
+  gap: var(--space-64);
+  align-items: center;
+}
+.hero__copy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-24); }
+.hero__eyebrow { display: inline-flex; align-items: center; gap: var(--space-8); }
+.hero__eyebrow::before {
+  content: "";
+  width: var(--space-4);
+  height: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+}
+.hero__title {
+  font-size: var(--text-7xl);
+  line-height: var(--text-7xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+  max-width: 12ch;
+}
+.hero__sub {
+  font-size: var(--text-lg);
+  line-height: var(--text-lg-lh);
+  color: var(--muted-foreground);
+  max-width: var(--measure);
+}
+.hero__cta { display: flex; align-items: center; gap: var(--space-12); }
+.hero__fine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.hero__fine li + li::before {
+  content: "·";
+  margin-inline-end: var(--space-8);
+  color: var(--input);
+}
+.hero__fine li { display: inline-flex; }
+
+/* Product panel in the hero: content, not decoration */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-24);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+}
+.panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-16); }
+.segmented {
+  display: inline-flex;
+  padding: var(--space-2);
+  gap: var(--space-2);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.segmented__item {
+  height: var(--space-20);
+  padding-inline: var(--space-8);
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), color var(--duration-micro) var(--ease-out);
+}
+.segmented__item:not(:disabled):hover { background: var(--accent); color: var(--foreground); }
+.segmented__item:not(:disabled):active { transform: scale(0.97); }
+.segmented__item[aria-pressed="true"] {
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.segmented__item:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.panel__figure { display: flex; align-items: baseline; gap: var(--space-12); }
+.panel__value {
+  font-size: var(--text-2xl);
+  line-height: var(--text-2xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+}
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  padding-inline: var(--space-8);
+  height: var(--space-20);
+}
+.delta--down { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 8%, var(--background)); }
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-12);
+  height: var(--space-96);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+}
+.chart__bar {
+  flex: 1;
+  height: var(--v);
+  background: var(--accent);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: background-color var(--duration-state) var(--ease-out);
+}
+.chart__bar--now { background: var(--primary); border-color: var(--primary); }
+.chart__axis {
+  display: flex;
+  gap: var(--space-12);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.chart__axis span { flex: 1; text-align: center; }
+.panel__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding-top: var(--space-16);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+}
+
+/* ---------- Logo row: quiet, no cards ---------- */
+.logos { padding-block: var(--space-64); border-top: 1px solid var(--border); }
+.logos__inner { display: flex; align-items: center; gap: var(--space-48); }
+.logos__label {
+  flex: none;
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.logos__list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: center;
+  justify-items: center;
+  flex: 1;
+  gap: var(--space-32);
+}
+.logos__item {
+  font-size: var(--text-lg);
+  line-height: var(--text-lg-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--muted-foreground);
+}
+
+/* ---------- Feature: split, panel left / copy right ---------- */
+.feature { padding-block: var(--space-96); border-top: 1px solid var(--border); }
+.feature__grid {
+  display: grid;
+  grid-template-columns: var(--hero-panel-w) minmax(0, 1fr);
+  gap: var(--space-64);
+  align-items: center;
+}
+.feature__copy { display: flex; flex-direction: column; gap: var(--space-24); }
+.feature__title {
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.feature__body { color: var(--muted-foreground); max-width: var(--measure); }
+.spec { display: flex; flex-direction: column; }
+.spec__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: var(--space-24);
+  padding-block: var(--space-16);
+  border-top: 1px solid var(--border);
+}
+.spec__row:last-child { border-bottom: 1px solid var(--border); }
+.spec__name {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+}
+.spec__desc {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+
+/* Cohort grid inside the feature panel */
+.cohort { display: grid; grid-template-columns: var(--space-64) repeat(6, minmax(0, 1fr)); gap: var(--space-4); align-items: center; }
+.cohort__label {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.cohort__head {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+  text-align: center;
+}
+.cohort__cell {
+  height: var(--space-36);
+  border-radius: var(--radius-sm);
+  background: color-mix(in oklab, var(--primary) var(--a), var(--accent));
+}
+.cohort__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+}
+.cohort__scale { display: flex; gap: var(--space-2); }
+.cohort__dot { width: var(--space-12); height: var(--space-8); border-radius: var(--radius-sm); }
+
+/* ---------- Metrics band ---------- */
+.metrics { padding-block: var(--space-96); background: var(--secondary); border-block: 1px solid var(--border); }
+.metrics__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.metrics__item { padding-inline: var(--space-32); }
+.metrics__item + .metrics__item { border-left: 1px solid var(--border); }
+.metrics__item:first-child { padding-inline-start: 0; }
+.metrics__value {
+  font-size: var(--text-5xl);
+  line-height: var(--text-5xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+  display: block;
+}
+.metrics__label {
+  display: block;
+  margin-top: var(--space-12);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+  text-wrap: balance;
+}
+
+/* ---------- CTA band: highest-contrast moment ---------- */
+.cta { padding-block: var(--space-96); background: var(--foreground); color: var(--background); }
+.cta__inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-64); }
+.cta__title {
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  max-width: 22ch;
+  text-wrap: balance;
+}
+.cta__sub {
+  margin-top: var(--space-12);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  color: color-mix(in oklab, var(--background) 72%, var(--foreground));
+  max-width: 46ch;
+}
+.cta__actions { display: flex; align-items: center; gap: var(--space-12); flex: none; }
+.cta__ghost { color: var(--background); }
+
+/* ---------- Footer ---------- */
+.footer { padding-block: var(--space-64); border-top: 1px solid var(--border); }
+.footer__grid { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: var(--space-48); }
+.footer__tag {
+  margin-top: var(--space-12);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+  max-width: 28ch;
+}
+.footer__head {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  margin-bottom: var(--space-12);
+}
+.footer__list { display: flex; flex-direction: column; gap: var(--space-8); }
+.footer__link {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-micro) var(--ease-out);
+}
+.footer__link:hover { color: var(--foreground); }
+.footer__link:active { transform: scale(0.97); }
+.footer__bottom {
+  margin-top: var(--space-48);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-24);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.status { display: inline-flex; align-items: center; gap: var(--space-8); }
+.status::before {
+  content: "";
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+}
+
+/* ---------- Motion: one entrance, staggered, transform/opacity only ---------- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(var(--space-12)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero__copy > * { animation: rise var(--duration-enter) var(--ease-out) backwards; }
+.hero__copy > :nth-child(1) { animation-delay: 0ms; }
+.hero__copy > :nth-child(2) { animation-delay: var(--stagger); }
+.hero__copy > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+.hero__copy > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
+.hero__copy > :nth-child(5) { animation-delay: calc(var(--stagger) * 4); }
+.hero__panel { animation: rise var(--duration-enter) var(--ease-out) 120ms backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+<body>
+<!--
+  Pulse web · marketing landing. One texture only (masked dot grid, top-right),
+  sections alternate skeleton instead of repeating a 3-card row: split hero with a
+  product panel, quiet logo row, split feature with a cohort heatmap, full-bleed
+  metrics band, inverted CTA band, 4-column footer.
+  Empty/loading/error states are declared out of scope for static marketing copy;
+  the hero panel carries a disabled-action state and the segmented range control
+  carries the selected state.
+-->
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="brand" href="#main" aria-label="Pulse home">
+      <svg class="brand__mark" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+        <path d="M2.5 13.5v-3M7.5 16.5V5M12.5 14.5V8.5M17.5 15.5V4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Pulse
+    </a>
+    <nav aria-label="Main">
+      <ul class="nav__links">
+        <li><a class="nav__link" href="#feature">Product</a></li>
+        <li><a class="nav__link" href="#metrics">Customers</a></li>
+        <li><a class="nav__link" href="#metrics">Pricing</a></li>
+        <li><a class="nav__link" href="#feature">Docs</a></li>
+        <li><a class="nav__link" href="#feature">Changelog</a></li>
+      </ul>
+    </nav>
+    <div class="nav__actions">
+      <a class="btn btn--ghost btn--sm" href="#footer">Sign in</a>
+      <a class="btn btn--primary btn--sm" href="#cta">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__texture" aria-hidden="true"></div>
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow hero__eyebrow">Product analytics</p>
+        <h1 class="hero__title" id="hero-title">Find the moment users decide to stay.</h1>
+        <p class="hero__sub">Pulse turns raw event streams into activation funnels, cohort retention and the one metric worth moving this week — without a data engineer in the loop.</p>
+        <div class="hero__cta">
+          <a class="btn btn--primary btn--lg" href="#cta">Start free — 30 days</a>
+          <a class="btn btn--ghost btn--lg" href="#feature">Book a walkthrough</a>
+        </div>
+        <ul class="hero__fine">
+          <li>No credit card</li>
+          <li>SOC 2 Type II</li>
+          <li>Live in 4 minutes</li>
+        </ul>
+      </div>
+
+      <figure class="panel hero__panel" aria-labelledby="panel-title">
+        <div class="panel__head">
+          <span class="eyebrow" id="panel-title">Activation · last 28 days</span>
+          <div class="segmented" role="group" aria-label="Date range">
+            <button class="segmented__item" type="button" aria-pressed="false">7d</button>
+            <button class="segmented__item" type="button" aria-pressed="true">28d</button>
+            <button class="segmented__item" type="button" aria-pressed="false">90d</button>
+          </div>
+        </div>
+        <div class="panel__figure">
+          <span class="panel__value">312</span>
+          <span class="muted" style="font-size: var(--text-sm); line-height: var(--text-sm-lh)">accounts activated</span>
+          <span class="delta">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" focusable="false">
+              <path d="M5 8.5V1.5M5 1.5 1.5 5M5 1.5 8.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            18.4%
+          </span>
+        </div>
+        <div class="chart" role="img" aria-label="Activation rate per week rising from 38% in week 1 to 86% in week 7">
+          <div class="chart__bar" style="--v: 38%"></div>
+          <div class="chart__bar" style="--v: 52%"></div>
+          <div class="chart__bar" style="--v: 44%"></div>
+          <div class="chart__bar" style="--v: 61%"></div>
+          <div class="chart__bar" style="--v: 58%"></div>
+          <div class="chart__bar" style="--v: 72%"></div>
+          <div class="chart__bar chart__bar--now" style="--v: 86%"></div>
+        </div>
+        <div class="chart__axis" aria-hidden="true">
+          <span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span>
+        </div>
+        <figcaption class="panel__foot">
+          <span>Updated 2 min ago</span>
+          <button class="btn btn--ghost btn--sm" type="button" disabled title="Export unlocks after your first sync">
+            Export CSV
+          </button>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="logos" aria-label="Customers">
+    <div class="container logos__inner">
+      <p class="logos__label">Trusted by product teams at</p>
+      <ul class="logos__list">
+        <li class="logos__item">Northwind</li>
+        <li class="logos__item">Kettle</li>
+        <li class="logos__item">Lumen Health</li>
+        <li class="logos__item">Arbor</li>
+        <li class="logos__item">Sable Studio</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="feature" id="feature" aria-labelledby="feature-title">
+    <div class="container feature__grid">
+      <figure class="panel" aria-labelledby="cohort-title">
+        <div class="panel__head">
+          <span class="eyebrow" id="cohort-title">Weekly retention · signed-up cohorts</span>
+          <span class="num" style="font-size: var(--text-xs); line-height: var(--text-xs-lh); color: var(--muted-foreground)">Day 28 · 41.2%</span>
+        </div>
+        <div class="cohort" aria-hidden="true">
+          <span></span>
+          <span class="cohort__head">W1</span><span class="cohort__head">W2</span><span class="cohort__head">W3</span>
+          <span class="cohort__head">W4</span><span class="cohort__head">W5</span><span class="cohort__head">W6</span>
+        </div>
+        <div class="cohort" role="img" aria-label="Retention heatmap: six weekly cohorts by six weeks, retention strongest in the two most recent cohorts">
+          <span class="cohort__label">Nov 4</span>
+          <span class="cohort__cell" style="--a: 52%"></span>
+          <span class="cohort__cell" style="--a: 44%"></span>
+          <span class="cohort__cell" style="--a: 39%"></span>
+          <span class="cohort__cell" style="--a: 34%"></span>
+          <span class="cohort__cell" style="--a: 31%"></span>
+          <span class="cohort__cell" style="--a: 28%"></span>
+
+          <span class="cohort__label">Oct 28</span>
+          <span class="cohort__cell" style="--a: 46%"></span>
+          <span class="cohort__cell" style="--a: 38%"></span>
+          <span class="cohort__cell" style="--a: 33%"></span>
+          <span class="cohort__cell" style="--a: 27%"></span>
+          <span class="cohort__cell" style="--a: 24%"></span>
+          <span class="cohort__cell" style="--a: 21%"></span>
+
+          <span class="cohort__label">Oct 21</span>
+          <span class="cohort__cell" style="--a: 38%"></span>
+          <span class="cohort__cell" style="--a: 29%"></span>
+          <span class="cohort__cell" style="--a: 24%"></span>
+          <span class="cohort__cell" style="--a: 19%"></span>
+          <span class="cohort__cell" style="--a: 16%"></span>
+          <span class="cohort__cell" style="--a: 14%"></span>
+
+          <span class="cohort__label">Oct 14</span>
+          <span class="cohort__cell" style="--a: 31%"></span>
+          <span class="cohort__cell" style="--a: 22%"></span>
+          <span class="cohort__cell" style="--a: 17%"></span>
+          <span class="cohort__cell" style="--a: 14%"></span>
+          <span class="cohort__cell" style="--a: 11%"></span>
+          <span class="cohort__cell" style="--a: 9%"></span>
+
+          <span class="cohort__label">Oct 7</span>
+          <span class="cohort__cell" style="--a: 24%"></span>
+          <span class="cohort__cell" style="--a: 16%"></span>
+          <span class="cohort__cell" style="--a: 12%"></span>
+          <span class="cohort__cell" style="--a: 9%"></span>
+          <span class="cohort__cell" style="--a: 7%"></span>
+          <span class="cohort__cell" style="--a: 5%"></span>
+        </div>
+        <figcaption class="panel__foot">
+          <span>Activation step: created second project</span>
+          <span class="cohort__legend">
+            Less
+            <span class="cohort__scale" aria-hidden="true">
+              <span class="cohort__dot" style="--a: 5%; background: color-mix(in oklab, var(--primary) var(--a), var(--accent))"></span>
+              <span class="cohort__dot" style="--a: 24%; background: color-mix(in oklab, var(--primary) var(--a), var(--accent))"></span>
+              <span class="cohort__dot" style="--a: 52%; background: color-mix(in oklab, var(--primary) var(--a), var(--accent))"></span>
+            </span>
+            More
+          </span>
+        </figcaption>
+      </figure>
+
+      <div class="feature__copy">
+        <p class="eyebrow">Cohorts</p>
+        <h2 class="feature__title" id="feature-title">Cohorts that explain the drop, not just show it.</h2>
+        <p class="feature__body">Every cohort carries the events that came before it. Click a cell and Pulse replays the sessions behind the number — so the argument in the retro is about the flow, not about who exported the CSV.</p>
+        <div class="spec">
+          <div class="spec__row">
+            <span class="spec__name">Sessions, not page views</span>
+            <span class="spec__desc">Events are stitched to a person and a session, so a funnel survives a reload, a second tab or a redirect.</span>
+          </div>
+          <div class="spec__row">
+            <span class="spec__name">Alerts before standup</span>
+            <span class="spec__desc">Thresholds fire into Slack with the segment, the release and the sample size already attached.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="metrics" id="metrics" aria-labelledby="metrics-title">
+    <div class="container">
+      <h2 class="eyebrow" id="metrics-title">Operating at scale, quietly</h2>
+      <div class="metrics__grid" style="margin-top: var(--space-40)">
+        <div class="metrics__item">
+          <span class="metrics__value">2.4B</span>
+          <span class="metrics__label">events per day, unsampled</span>
+        </div>
+        <div class="metrics__item">
+          <span class="metrics__value">38ms</span>
+          <span class="metrics__label">median query time on a 90-day window</span>
+        </div>
+        <div class="metrics__item">
+          <span class="metrics__value">99.99%</span>
+          <span class="metrics__label">ingest uptime, trailing 90 days</span>
+        </div>
+        <div class="metrics__item">
+          <span class="metrics__value">4,120</span>
+          <span class="metrics__label">product teams shipping on Pulse</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="cta" aria-labelledby="cta-title">
+    <div class="container cta__inner">
+      <div>
+        <h2 class="cta__title" id="cta-title">See the first session that predicts a second one.</h2>
+        <p class="cta__sub">Free for 30 days. Bring one event stream and we will build the activation funnel with you on the call.</p>
+      </div>
+      <div class="cta__actions">
+        <a class="btn btn--inverse btn--lg" href="#main">Start free</a>
+        <a class="btn btn--ghost btn--lg cta__ghost" href="#feature" style="border-color: color-mix(in oklab, var(--background) 24%, var(--foreground))">Read the docs</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer" id="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <span class="brand">
+          <svg class="brand__mark" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+            <path d="M2.5 13.5v-3M7.5 16.5V5M12.5 14.5V8.5M17.5 15.5V4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Pulse
+        </span>
+        <p class="footer__tag">Product analytics for teams that ship weekly, not quarterly.</p>
+      </div>
+      <div>
+        <p class="footer__head">Product</p>
+        <ul class="footer__list">
+          <li><a class="footer__link" href="#feature">Event streams</a></li>
+          <li><a class="footer__link" href="#feature">Cohorts</a></li>
+          <li><a class="footer__link" href="#feature">Funnels</a></li>
+          <li><a class="footer__link" href="#feature">Alerts</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer__head">Resources</p>
+        <ul class="footer__list">
+          <li><a class="footer__link" href="#feature">Documentation</a></li>
+          <li><a class="footer__link" href="#feature">API reference</a></li>
+          <li><a class="footer__link" href="#feature">Changelog</a></li>
+          <li><a class="footer__link" href="#metrics">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer__head">Company</p>
+        <ul class="footer__list">
+          <li><a class="footer__link" href="#feature">About</a></li>
+          <li><a class="footer__link" href="#metrics">Customers</a></li>
+          <li><a class="footer__link" href="#feature">Careers</a></li>
+          <li><a class="footer__link" href="#footer">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Pulse Analytics, Inc.</span>
+      <span class="status">All systems operational</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

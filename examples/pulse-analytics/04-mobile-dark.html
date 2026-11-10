@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Pulse — Overview (mobile, dark)</title>
+<style>
+/* ============================================================
+   TOKEN BLOCK — DARK. Same eleven semantic roles as 02/03, values re-mapped
+   (references/dark-mode.md §1-§2). Semantic roles: shadcn/ui convention (E1),
+   ramp: E7.
+   Static board: dark is pinned in :root + data-theme="dark" so the screenshot is
+   deterministic. At runtime the identical declarations live in
+   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
+   (dark-mode.md §6); no JS owns the theme and color-scheme is declared in :root
+   and in <head>.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  /* Semantic color roles — DARK re-map of the same eleven roles (light values
+     live in 02/03). Mapping rules + measured pairs: references/dark-mode.md. */
+  --background: #0c100f;               /* oklch .168 .007 179 */
+  --foreground: #e9efed;               /* oklch .947 — not pure white */
+  --card: #1c2221;                     /* L +0.078: surfaces elevate by lightness */
+  --card-foreground: #e9efed;
+  --popover: #232a29;                  /* top of the ladder (L .278) */
+  --popover-foreground: #e9efed;
+  --primary: #5fd6b8;                  /* inverted: light pill on dark */
+  --primary-foreground: #05100d;       /* 10.86:1 on --primary */
+  --secondary: rgb(255 255 255 / 0.06);/* wash, not a color */
+  --secondary-foreground: #e9efed;
+  --muted: rgb(255 255 255 / 0.06);
+  --muted-foreground: #9daba7;         /* 8.04:1 bg / 6.78:1 card / 6.15:1 popover */
+  --accent: rgb(255 255 255 / 0.08);
+  --accent-foreground: #e9efed;
+  --destructive: #f4786a;              /* lightened: 7.06:1 bg / 5.95:1 card */
+  --destructive-foreground: #170604;   /* 7.27:1 on --destructive */
+  --border: rgb(255 255 255 / 0.12);   /* low-alpha white replaces the gray ramp */
+  --input: rgb(255 255 255 / 0.38);    /* 3.56:1 — WCAG 1.4.11 UI boundary */
+  --ring: #8be8d2;                     /* 13.29:1 — focus lightens independently */
+
+  /* Radius: one token + derivatives */
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-pill: 9999px;
+
+  /* Type ramp: Tailwind v4 paired scale (E7) */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --text-xs: 12px;   --text-xs-lh: 16px;
+  --text-sm: 14px;   --text-sm-lh: 20px;
+  --text-base: 16px; --text-base-lh: 24px;
+  --text-lg: 18px;   --text-lg-lh: 28px;
+  --text-xl: 20px;   --text-xl-lh: 28px;
+  --text-2xl: 24px;  --text-2xl-lh: 32px;
+  --text-3xl: 30px;  --text-3xl-lh: 36px;
+  --text-4xl: 36px;  --text-4xl-lh: 40px;
+  --text-5xl: 48px;  --text-5xl-lh: 1;
+  --text-6xl: 60px;  --text-6xl-lh: 1;
+  --text-7xl: 72px;  --text-7xl-lh: 1;
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-loose: 0.06em;
+  --measure: 65ch;
+
+  /* Spacing: 4px ramp (E7, --spacing: .25rem) */
+  --space-1: 1px;    --space-2: 2px;    --space-4: 4px;    --space-8: 8px;
+  --space-12: 12px;  --space-16: 16px;  --space-20: 20px;  --space-24: 24px;
+  --space-28: 28px;  --space-32: 32px;  --space-36: 36px;  --space-40: 40px;
+  --space-44: 44px;  --space-48: 48px;  --space-56: 56px;  --space-64: 64px;
+  --space-80: 80px;  --space-96: 96px;  --space-128: 128px;
+
+  /* Layout dimensions per platform */
+  --container-max: 1216px;
+  --content-max: 1120px;
+  --hero-panel-w: 480px;
+  --nav-h: 64px;
+  --board-w: 1440px;
+  --board-h: 900px;
+  --frame-w: 390px;
+  --frame-h: 844px;
+  --safe-top: 47px;
+  --safe-bottom: 34px;
+  --appbar-h: 56px;
+  --tabbar-h: 56px;
+  --hit-min: 44px;
+  --rail-w: 48px;
+  --sidebar-w: 248px;
+  --inspector-w: 320px;
+  --topbar-h: 48px;
+  --statusbar-h: 24px;
+  --row-h: 32px;
+  --row-tap-h: 64px;
+
+  /* Elevation: on dark the shadow must be deep and carry a 1px ring;
+     light-theme alphas are invisible on near-black (dark-mode.md §4). */
+  --shadow-popover: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.1);
+  --shadow-modal: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.1);
+
+  /* Motion */
+  --duration-micro: 120ms;
+  --duration-state: 180ms;
+  --duration-enter: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.25, 1);
+  --stagger: 60ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+button { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.muted { color: var(--muted-foreground); }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+.hit { min-width: var(--hit-min); min-height: var(--hit-min); }
+
+/* ---------- Phone frame ---------- */
+.app {
+  position: relative;
+  width: var(--frame-w);
+  height: var(--frame-h);
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+
+/* ---------- Status bar (safe area top) ---------- */
+.statusbar {
+  height: var(--safe-top);
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 var(--space-24) var(--space-8);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.statusbar__icons { display: flex; align-items: center; gap: var(--space-4); }
+.statusbar__bars { display: flex; align-items: flex-end; gap: var(--space-1); }
+.statusbar__bars span { width: var(--space-2); background: var(--foreground); border-radius: var(--radius-pill); }
+.statusbar__bars span:nth-child(1) { height: var(--space-4); }
+.statusbar__bars span:nth-child(2) { height: var(--space-8); }
+.statusbar__bars span:nth-child(3) { height: var(--space-12); }
+.statusbar__bars span:nth-child(4) { height: var(--space-16); }
+.statusbar__battery {
+  width: var(--space-24);
+  height: var(--space-12);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1);
+  display: flex;
+}
+.statusbar__battery::after {
+  content: "";
+  flex: 1;
+  background: var(--foreground);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Top app bar ---------- */
+.appbar {
+  height: var(--appbar-h);
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding-inline: var(--space-16) var(--space-8);
+  border-bottom: 1px solid var(--border);
+}
+.appbar__title {
+  font-size: var(--text-xl);
+  line-height: var(--text-xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  margin-inline-end: auto;
+}
+.iconbtn {
+  width: var(--hit-min);
+  height: var(--hit-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.iconbtn:not(:disabled):hover { background: var(--accent); color: var(--foreground); }
+.iconbtn:not(:disabled):active { background: var(--secondary); transform: scale(0.97); }
+.iconbtn:disabled { opacity: 0.45; cursor: not-allowed; }
+.iconbtn__dot {
+  position: absolute;
+  top: var(--space-12);
+  right: var(--space-12);
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  box-shadow: 0 0 0 2px var(--background);
+}
+.iconbtn--dot { position: relative; }
+
+/* ---------- Content ---------- */
+.content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-16) var(--space-16) 0;
+  overflow: hidden;
+}
+
+.rangebar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8); flex: none; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: var(--hit-min);
+  padding-inline: var(--space-12) var(--space-8);
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), border-color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.chip:not(:disabled):hover { background: var(--accent); border-color: var(--input); }
+.chip:not(:disabled):active { transform: scale(0.97); background: var(--secondary); }
+.chip:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.live::before {
+  content: "";
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  animation: pulse 2400ms var(--ease-out) infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* KPI hero */
+.kpi-hero {
+  flex: none;
+  margin-top: var(--space-8);
+  padding: var(--space-16);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+.kpi-hero__label {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.kpi-hero__value {
+  display: block;
+  margin-top: var(--space-4);
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+}
+.kpi-hero__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--space-20);
+  padding-inline: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--foreground);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+.delta--down { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 8%, var(--background)); }
+
+.spark { display: flex; align-items: flex-end; gap: var(--space-4); height: var(--space-40); flex: none; }
+.spark span {
+  width: var(--space-4);
+  height: var(--v);
+  background: color-mix(in oklab, var(--primary) 24%, var(--background));
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+.spark span:last-child { background: var(--primary); }
+
+/* KPI pair */
+.kpi-grid {
+  flex: none;
+  margin-top: var(--space-8);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8);
+}
+.kpi {
+  padding: var(--space-12);
+  min-height: var(--space-96);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.kpi__label {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+}
+.kpi__value {
+  font-size: var(--text-2xl);
+  line-height: var(--text-2xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+}
+/* Loading state: skeleton at the exact final geometry */
+.skeleton {
+  display: block;
+  height: var(--space-24);
+  margin-block: var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--secondary);
+  box-shadow: inset 0 0 0 1px var(--border);
+  animation: breathe 1600ms var(--ease-out) infinite;
+}
+@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* Section header: whole row is the tap target */
+.sec {
+  flex: none;
+  margin-top: var(--space-8);
+  width: 100%;
+  height: var(--hit-min);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.sec:not(:disabled):hover { background: var(--accent); }
+.sec:not(:disabled):active { transform: scale(0.97); }
+.sec__title { font-size: var(--text-base); line-height: var(--text-base-lh); font-weight: var(--weight-medium); }
+.sec__count {
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.sec__chev { margin-inline-start: auto; color: var(--muted-foreground); display: inline-flex; }
+
+/* Error banner (all-states-designed) */
+.banner {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-12);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in oklab, var(--destructive) 28%, var(--background));
+  background: color-mix(in oklab, var(--destructive) 6%, var(--background));
+}
+.banner__icon { color: var(--destructive); display: inline-flex; flex: none; }
+.banner__text {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  min-width: 0;
+}
+.banner__title { font-weight: var(--weight-medium); display: block; }
+.banner__sub { color: var(--muted-foreground); display: block; font-size: var(--text-xs); line-height: var(--text-xs-lh); }
+.banner .iconbtn { margin-inline-start: auto; }
+
+/* List section */
+.list { flex: none; margin-top: var(--space-4); overflow: hidden; }
+.row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  height: var(--space-56);
+  padding-inline: var(--space-12);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out);
+}
+.row:first-child { border-top: 0; }
+.row:not(:disabled):hover { background: var(--secondary); }
+.row:not(:disabled):active { background: var(--accent); transform: scale(0.97); }
+.row:disabled { opacity: 0.45; cursor: not-allowed; }
+.row__glyph {
+  width: var(--space-32);
+  height: var(--space-32);
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+  color: var(--muted-foreground);
+}
+.row__body { min-width: 0; display: flex; flex-direction: column; }
+.row__title {
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row__sub { font-size: var(--text-xs); line-height: var(--text-xs-lh); color: var(--muted-foreground); }
+.row__value {
+  margin-inline-start: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+}
+.row__num {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+.row__delta { font-size: var(--text-xs); line-height: var(--text-xs-lh); font-variant-numeric: tabular-nums; color: var(--muted-foreground); }
+
+/* ---------- Bottom tab bar (<=5 destinations) ---------- */
+.tabbar-row {
+  flex: none;
+  height: var(--tabbar-h);
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: color-mix(in oklab, var(--background) 92%, transparent);
+  backdrop-filter: blur(var(--space-20));
+}
+.tab {
+  flex: 1;
+  height: var(--tabbar-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: color var(--duration-micro) var(--ease-out), transform var(--duration-micro) var(--ease-out), background-color var(--duration-micro) var(--ease-out);
+}
+.tab:not(:disabled):hover { color: var(--foreground); background: var(--secondary); }
+.tab:not(:disabled):active { transform: scale(0.97); }
+.tab[aria-current="page"] { color: var(--primary); }
+.tab:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.home {
+  flex: none;
+  height: var(--safe-bottom);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklab, var(--background) 92%, transparent);
+}
+.home::after {
+  content: "";
+  width: var(--space-128);
+  height: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: color-mix(in oklab, var(--foreground) 24%, var(--background));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+<body>
+<!--
+  Pulse mobile · DARK re-map of 02-mobile-overview.html (S12). Markup and every
+  component rule are identical to the light board; only the :root role values
+  differ, plus dark is pinned for a deterministic static preview. Contrast is
+  measured on the dark pairs (references/dark-mode.md §3).
+  iOS-like type system (one named system, see 02 tradeoff).
+  Fab: intentionally omitted — this screen is read-only monitoring, the single
+  create action (new alert) lives in Alerts, so a FAB would be a dead affordance.
+  Empty state: out of scope here — the screen is a top-N summary that cannot be
+  empty; the Events screen owns the empty/list state. Loading and error states
+  are designed below.
+-->
+<div class="app">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="statusbar__icons" aria-hidden="true">
+      <span class="statusbar__bars"><span></span><span></span><span></span><span></span></span>
+      <span class="statusbar__battery"></span>
+    </span>
+  </div>
+
+  <header class="appbar">
+    <h1 class="appbar__title">Overview</h1>
+    <button class="iconbtn iconbtn--dot" type="button" aria-label="Notifications, 2 unread">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="M12 4a5 5 0 0 0-5 5v3.2L5.6 15.6h12.8L17 12.2V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="iconbtn__dot"></span>
+    </button>
+    <button class="iconbtn" type="button" aria-label="Filters">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="M4 7h9M17 7h3M4 17h3M11 17h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="15" cy="7" r="2" stroke="currentColor" stroke-width="1.6"/>
+        <circle cx="9" cy="17" r="2" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="content">
+    <div class="rangebar">
+      <button class="chip" type="button">
+        Last 28 days
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+          <path d="M4 6.5 8 10l4-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="live">Live</span>
+    </div>
+
+    <section class="card kpi-hero" aria-labelledby="kpi-hero-label">
+      <div>
+        <span class="kpi-hero__label" id="kpi-hero-label">Active users, 24h</span>
+        <span class="kpi-hero__value">18,402</span>
+        <span class="kpi-hero__meta">
+          <span class="delta">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" focusable="false">
+              <path d="M5 8.5V1.5M5 1.5 1.5 5M5 1.5 8.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            6.2%
+          </span>
+          vs previous 24h
+        </span>
+      </div>
+      <div class="spark" role="img" aria-label="Active users trending up over the last 14 hours">
+        <span style="--v: 24%"></span><span style="--v: 38%"></span><span style="--v: 32%"></span>
+        <span style="--v: 48%"></span><span style="--v: 44%"></span><span style="--v: 62%"></span>
+        <span style="--v: 58%"></span><span style="--v: 72%"></span><span style="--v: 80%"></span>
+        <span style="--v: 100%"></span>
+      </div>
+    </section>
+
+    <div class="kpi-grid">
+      <section class="card kpi" aria-labelledby="kpi-conv">
+        <span class="kpi__label" id="kpi-conv">Signup → activation</span>
+        <span class="kpi__value">41.8%</span>
+        <span class="delta delta--down">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" focusable="false">
+            <path d="M5 1.5v7M5 8.5 1.5 5M5 8.5 8.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          1.4 pp
+        </span>
+      </section>
+      <section class="card kpi" aria-labelledby="kpi-load" aria-busy="true">
+        <span class="kpi__label" id="kpi-load">p95 ingest latency</span>
+        <span class="skeleton" role="status" aria-label="Loading latency"></span>
+        <span class="kpi__label">updating…</span>
+      </section>
+    </div>
+
+    <button class="sec" type="button">
+      <span class="sec__title">Needs attention</span>
+      <span class="sec__count">3 open</span>
+      <span class="sec__chev" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" focusable="false">
+          <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </button>
+
+    <div class="banner" role="alert">
+      <span class="banner__icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" focusable="false">
+          <path d="M12 8.5v4.2M12 16.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M10.3 4.3 3.6 16.4A2 2 0 0 0 5.3 19.4h13.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="banner__text">
+        <span class="banner__title">Last 15 minutes did not sync</span>
+        <span class="banner__sub">Numbers below are from 14:22 UTC</span>
+      </span>
+      <button class="iconbtn" type="button" aria-label="Retry sync">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M4.5 12a7.5 7.5 0 1 1 2.6 5.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M4.2 17.4v-4.2h4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <button class="sec" type="button">
+      <span class="sec__title">Top events</span>
+      <span class="sec__chev" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" focusable="false">
+          <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </button>
+
+    <ul class="card list">
+      <li>
+        <button class="row" type="button">
+          <span class="row__glyph" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" focusable="false">
+              <path d="M3 11V8M6.5 11V4M10 11V6.5M13.5 11V3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="row__body">
+            <span class="row__title">project_created</span>
+            <span class="row__sub">Activation step</span>
+          </span>
+          <span class="row__value">
+            <span class="row__num">4,812</span>
+            <span class="row__delta">+12.4%</span>
+          </span>
+        </button>
+      </li>
+      <li>
+        <button class="row" type="button">
+          <span class="row__glyph" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" focusable="false">
+              <path d="M3 7.5 8 3h5v5l-5 5-5-5.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="row__body">
+            <span class="row__title">invite_sent</span>
+            <span class="row__sub">Team step</span>
+          </span>
+          <span class="row__value">
+            <span class="row__num">2,146</span>
+            <span class="row__delta">+3.1%</span>
+          </span>
+        </button>
+      </li>
+      <li>
+        <button class="row" type="button">
+          <span class="row__glyph" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" focusable="false">
+              <rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M6 8h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="row__body">
+            <span class="row__title">dashboard_viewed</span>
+            <span class="row__sub">Return step</span>
+          </span>
+          <span class="row__value">
+            <span class="row__num">1,904</span>
+            <span class="row__delta">−0.8%</span>
+          </span>
+        </button>
+      </li>
+    </ul>
+  </main>
+
+  <nav class="tabbar-row" aria-label="Primary">
+    <button class="tab" type="button" aria-current="page">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <rect x="3.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/>
+        <rect x="13.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/>
+        <rect x="3.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/>
+        <rect x="13.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.7"/>
+      </svg>
+      Overview
+    </button>
+    <button class="tab" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="M4 7h16M4 12h10M4 17h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      Events
+    </button>
+    <button class="tab" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="M3.5 5h17l-6.5 7.4v5.4l-4 2.2v-7.6L3.5 5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      </svg>
+      Funnels
+    </button>
+    <button class="tab" type="button">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+        <path d="M12 4a5 5 0 0 0-5 5v3.2L5.6 15.6h12.8L17 12.2V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      Alerts
+    </button>
+  </nav>
+
+  <div class="home" aria-hidden="true"></div>
+</div>
+</body>
+</html>

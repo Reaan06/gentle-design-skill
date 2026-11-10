@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta — gentle-design-skill</title>
+<style>
+  @page { size: A4; margin: 22mm 20mm; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1A1815; font-size: 10.5pt; line-height: 1.55; margin: 0; }
+  h1 { font-size: 21pt; line-height: 1.2; margin: 0 0 4pt; letter-spacing: -0.01em; }
+  h2 { font-size: 13pt; margin: 18pt 0 6pt; padding-bottom: 4pt; border-bottom: 1px solid #1A1815; }
+  p { margin: 6pt 0; }
+  .meta { font-family: Helvetica, Arial, sans-serif; font-size: 8.5pt; color: #555; margin: 0 0 14pt; }
+  .meta code { color: #7F1D1D; }
+  code { font-family: 'Cascadia Code', Menlo, Consolas, monospace; font-size: 8.8pt; background: #F2EEE7; padding: 1px 3px; border-radius: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; margin: 8pt 0; }
+  th { text-align: left; font-family: Helvetica, Arial, sans-serif; font-size: 8pt; letter-spacing: .06em; text-transform: uppercase; color: #555; border-bottom: 1px solid #1A1815; padding: 4pt 6pt; }
+  td { border-bottom: 1px solid #D8D2C6; padding: 4pt 6pt; vertical-align: top; }
+  ul { margin: 6pt 0 6pt 16pt; padding: 0; }
+  li { margin: 3pt 0; }
+  .pull { border-left: 3px solid #7F1D1D; padding: 4pt 10pt; margin: 10pt 0; font-style: italic; }
+  .accent { color: #7F1D1D; }
+</style>
+</head>
+<body>
+
+<h1>Propuesta: <span class="accent">gentle-design-skill</span></h1>
+<p style="font-size:12pt; margin-top:0;">Calidad de diseño profesional para Gentle Shell — oficio visual con evidencia y gate ejecutable.</p>
+<p class="meta">Autor: comunidad Gentle Programming · Licencia: MIT · Estado: implementado y verificado ·
+Repo: <code>github.com/Reaan06/gentle-design-skill</code> ·
+Hub: <code>gentlemanprogramming.com/gentle-hub</code> (topics <code>gentle-shell-package</code> + <code>gentle-shell-skill</code>)</p>
+
+<h2>1. El problema</h2>
+<p>Los agentes de código generan interfaces que se reconocen al instante como “hechas por IA”: gradientes violeta, Inter en todo, tres cards idénticas, bordes redondeados uniformes, cero estados de error. La causa tiene nombre — <strong>convergencia distributiva</strong>: ante prompts sin dirección, el modelo regresa a la mediana estadística de todo lo que ya vio. El resultado es el look de <em>vibe coding</em>: técnicamente correcto, genérico de más.</p>
+<p>Las herramientas profesionales de diseño con IA (Vercel v0, Google Stitch, Figma Make) no tienen ese problema porque <strong>no le dejan la decisión de gusto al azar</strong>: congelan tokens antes de generar, prohiben clichés con alternativas nombradas y revisan el render antes de entregar.</p>
+
+<h2>2. La propuesta</h2>
+<p><strong>gentle-design-skill</strong>: una skill acompañante para el workflow de <code>gentle-design</code> en Gentle Shell que codifica, como reglas mecánicas y con evidencia citada, cómo funcionan por dentro esos harnesses profesionales. No es un prompt bonito: es un sistema de reglas verificables + un gate ejecutable.</p>
+<ul>
+  <li><strong>Dirección antes que tokens</strong>: catálogo de 8 direcciones de arte nombradas + Direction Contract (tesis, presupuesto de color, movimientos prohibidos). Rompe la convergencia antes de escribir una línea de CSS.</li>
+  <li><strong>Foundation Pass</strong>: bloque de tokens semánticos (3–5 colores, rampa 4px, escala tipográfica documentada, un solo <code>--radius</code>) — el mismo mecanismo con el que Stitch separa los tokens del prompt de generación.</li>
+  <li><strong>Craft Pass</strong>: disciplina de color (~90% superficies neutras), textura en vez de decoración, matriz completa de estados, motion &lt;300ms con <code>prefers-reduced-motion</code>.</li>
+  <li><strong>Professional Gate</strong>: checklist mecánica de ~40 ítems + <code>design-gate.py</code>, un linter estático de 12 reglas (tokens, rampa, <code>transition: all</code>, tells de slop) con salida <code>file:line</code> y exit code — el “design-slop cop” que convierte el gusto en evidencia.</li>
+  <li><strong>Cobertura Web / Mobile / Desktop</strong>: convenciones iOS/Material, densidad y teclado de desktop, dark mode de primera clase.</li>
+  <li><strong>DESIGN.md</strong>: cada diseño aprobado emite su sistema de tokens en la spec de Google (<code>@google/design.md lint</code>), portable entre harnesses.</li>
+</ul>
+
+<h2>3. El método: ingeniería inversa perfecta</h2>
+<p>Nada es “opinión de modelo”. Cada regla cita su evidencia (E1–E10 en <code>references/evidence.md</code>):</p>
+<table>
+  <tr><th>Evidencia</th><th>Fuente</th></tr>
+  <tr><td>Tema shadcn capturado en runtime (monocromo, bordes 1px, radius 10px)</td><td>ui.shadcn.com — cómputo de estilos en vivo</td></tr>
+  <tr><td>Landings de v0 y Stitch (restricción, tipografía display, textura)</td><td>capturas de pantalla analizadas</td></tr>
+  <tr><td>“All states designed”, “never <code>transition: all</code>”</td><td>Vercel design guidelines</td></tr>
+  <tr><td>Tokens congelados antes de generar; 3 variantes por defecto</td><td>repos oficiales <code>google-labs-code/stitch-skills</code></td></tr>
+  <tr><td>Linter de 11 reglas + WCAG 4.5:1</td><td><code>google-labs-code/design.md</code></td></tr>
+  <tr><td>Dos pasadas + crítica con screenshots</td><td><code>anthropics/skills</code> (frontend-design)</td></tr>
+  <tr><td>Autofixers deterministas; 57% menos fallos con design.md</td><td>blog de ingeniería de Vercel</td></tr>
+  <tr><td>Test de sustitución, tesis visual, alternativas nombradas</td><td>skills públicos anti-slop (impeccable, anti-slop-design, unslop-ui)</td></tr>
+  <tr><td>Los “tells” mecánicos del slop</td><td>design-slop cop (checks DOM/CSS deterministas)</td></tr>
+</table>
+<p class="meta">Los prompts filtrados de v0/Lovable se usan solo como pistas y están marcados como no verificados.</p>
+
+<h2>4. Resultados verificados</h2>
+<ul>
+  <li><strong>Pulse</strong> (SaaS de analítica): landing web 1440×900, vista mobile 390×844, workspace desktop 1440×900 + variantes dark — 86/86 checks estructurales, gate limpio, DESIGN.md lint limpio (0 errores), paridad geométrica entre temas.</li>
+  <li><strong>Molino</strong> (tostador editorial): diseñado desde un Direction Contract congelado; el test de sustitución falla como debe — la etiqueta de tueste impresa y el índice foliado solo pueden ser de un tostador. Gate exit 0, lint exit 0, acento gastado exactamente 3 veces por vista.</li>
+  <li>El gate detectó y corrigió un hallazgo real (stencil de máscara sin token) en su primera pasada sobre arte existente.</li>
+</ul>
+<p class="pull">“Si cambiás el nombre, el logo y el color de acento y el 80% de la página sigue siendo igual de plausible para otro producto, el diseño es genérico.” — el test que el gate obliga a fallar.</p>
+
+<h2>5. Costo y alcance</h2>
+<ul>
+  <li>Skill estática: 1 SKILL.md + 9 referencias + 1 script Python (stdlib). Sin dependencias nuevas, sin servicios externos.</li>
+  <li>Se integra al workflow existente (gentle-design entrega, gentle-ui-design UX; esta skill agrega el oficio visual).</li>
+  <li>Mantenimiento: la evidencia está fechada; el gate es determinista y testeable.</li>
+</ul>
+
+<h2>6. Pedido</h2>
+<p>Publicar el repo bajo los topics del Hub (<code>gentle-shell-package</code>, <code>gentle-shell-skill</code>) para que aparezca en el catálogo comunitario, y — si el equipo lo considera — promocionarlo como ejemplo del patrón “skill con evidencia + gate ejecutable” en la documentación de la comunidad.</p>
+
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Molino — Tienda · Café del jueves</title>
+<style>
+/* ============================================================
+   TOKEN BLOCK — byte-identical in 01-tienda.html and
+   02-suscripcion.html. Semantic roles (E1), 4px ramp (E7),
+   Direction Contract: Editorial / Print (design/molino-cafe/).
+   ============================================================ */
+:root {
+  /* Paper, ink, one red. Roles only — no component ever names a raw color. */
+  --background: #faf7f2;
+  --foreground: #1a1815;
+  --card: #faf7f2;
+  --card-foreground: #1a1815;
+  --popover: #faf7f2;
+  --popover-foreground: #1a1815;
+  --primary: #7f1d1d;
+  --primary-foreground: #faf7f2;
+  --primary-hover: #6a1818;
+  --secondary: #f2ede4;
+  --secondary-foreground: #1a1815;
+  --muted: #f2ede4;
+  --muted-foreground: #5f574d;
+  --accent: #ebe4d8;
+  --accent-foreground: #1a1815;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #faf7f2;
+  --border: rgb(26 24 21 / 0.6);
+  --border-faint: rgb(26 24 21 / 0.2);
+  --input: rgb(26 24 21 / 0.6);
+  --ring: #1a1815;
+
+  /* Radius: near-straight, one token + derivatives */
+  --radius: 0.125rem;
+  --radius-sm: calc(var(--radius) - 1px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-pill: 9999px;
+
+  /* Type: one serif for the page, one grotesque for printed labels */
+  --font-serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-label: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --text-xs: 12px;   --text-xs-lh: 16px;
+  --text-sm: 14px;   --text-sm-lh: 20px;
+  --text-base: 16px; --text-base-lh: 24px;
+  --text-lg: 18px;   --text-lg-lh: 28px;
+  --text-xl: 20px;   --text-xl-lh: 28px;
+  --text-2xl: 24px;  --text-2xl-lh: 32px;
+  --text-3xl: 30px;  --text-3xl-lh: 36px;
+  --text-4xl: 36px;  --text-4xl-lh: 40px;
+  --text-5xl: 48px;  --text-5xl-lh: 1;
+  --text-6xl: 60px;  --text-6xl-lh: 1;
+  --text-7xl: 72px;  --text-7xl-lh: 1;
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-label: 0.14em;
+  --tracking-label-tight: 0.1em;
+  --measure: 65ch;
+  --measure-narrow: 52ch;
+
+  /* Spacing: the 4px ramp only */
+  --space-1: 1px;   --space-2: 2px;   --space-4: 4px;   --space-8: 8px;
+  --space-12: 12px; --space-16: 16px; --space-20: 20px; --space-24: 24px;
+  --space-32: 32px; --space-40: 40px; --space-48: 48px; --space-64: 64px;
+  --space-80: 80px; --space-96: 96px; --space-128: 128px;
+
+  /* Layout */
+  --container-max: 1248px;
+  --plate-w: 420px;
+  --summary-w: 416px;
+  --board-w: 1440px;
+  --board-h: 900px;
+
+  /* Motion: fades only, 300–400ms; micro-states at 180ms */
+  --duration-hover: 180ms;
+  --duration-fade: 360ms;
+  --stagger: 60ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, p, dl, dd, ol, figure { margin: 0; }
+ol { padding: 0; list-style: none; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+button { font: inherit; }
+
+::selection { background: var(--accent); color: var(--foreground); }
+
+:where(a, button, input, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-32);
+}
+
+/* Small-caps metadata: the system's only uppercase, always loose-tracked (B6). */
+.label {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Comparing numbers: lining tabular figures, in the label face (B5). */
+.figures {
+  font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.skip {
+  position: absolute;
+  left: var(--space-16);
+  top: var(--space-8);
+  z-index: 40;
+  padding: var(--space-8) var(--space-12);
+  background: var(--foreground);
+  color: var(--background);
+  border-radius: var(--radius-md);
+  font-family: var(--font-label);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  transform: translateY(calc(-1 * var(--space-48)));
+}
+.skip:focus-visible { transform: none; }
+
+/* ---------- Masthead: a newspaper nameplate, hairline, small caps ---------- */
+.masthead {
+  border-bottom: 1px solid var(--border);
+  animation: printed-in var(--duration-fade) var(--ease-out) both;
+}
+.masthead__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-32);
+  padding-block: var(--space-24);
+}
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-12);
+  text-decoration: none;
+  justify-self: start;
+}
+.wordmark__name {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  line-height: var(--text-2xl-lh);
+  letter-spacing: var(--tracking-label-tight);
+  text-transform: uppercase;
+}
+.wordmark__sub { display: none; }
+
+.masthead__nav { display: flex; align-items: center; gap: var(--space-24); }
+.navlink {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  padding-block: var(--space-4);
+  border-bottom: 1px solid transparent;
+  transition: color var(--duration-hover) var(--ease-out),
+              border-color var(--duration-hover) var(--ease-out);
+}
+.navlink:hover { color: var(--foreground); border-color: var(--border); }
+.navlink:active { color: var(--muted-foreground); }
+.navlink.is-current { border-color: var(--foreground); }
+.navlink[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+
+.masthead__meta { justify-self: end; text-align: right; }
+
+/* ---------- Hero: titular left over a 65ch column, printed label right ---------- */
+.hero { padding-block: var(--space-96); }
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--plate-w);
+  gap: var(--space-96);
+  align-items: stretch;
+}
+.hero__lede {
+  display: flex;
+  flex-direction: column;
+  animation: printed-in var(--duration-fade) var(--ease-out) both;
+}
+.hero__title {
+  font-size: var(--text-7xl);
+  line-height: var(--text-7xl-lh);
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--weight-regular);
+}
+.hero__deck {
+  margin-top: var(--space-32);
+  max-width: var(--measure);
+  font-size: var(--text-xl);
+  line-height: var(--text-xl-lh);
+  text-wrap: pretty;
+}
+.hero__deck em { font-style: italic; }
+
+/* Pinned to the bottom of the plate: the facts rule lands on the label's foot rule. */
+.hero__facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-24);
+  margin-top: auto;
+  padding-top: var(--space-20);
+  border-top: 1px solid var(--border);
+}
+.fact dd {
+  margin-top: var(--space-8);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+}
+
+/* The week's label: a printed plate. Rules, not fill; no shadow, no card. */
+.plate {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-32);
+  animation: printed-in var(--duration-fade) var(--ease-out) both;
+  animation-delay: var(--stagger);
+}
+.plate__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding-bottom: var(--space-16);
+  border-bottom: 1px solid var(--border);
+}
+.plate__title {
+  margin-top: var(--space-24);
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-regular);
+}
+.plate__origin {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.plate__rows { margin-top: var(--space-24); }
+.plate__row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: var(--space-16);
+  align-items: baseline;
+  padding-block: var(--space-8);
+  border-top: 1px solid var(--border-faint);
+}
+.plate__row dd {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  max-width: var(--measure-narrow);
+}
+.plate__row dd.plate__notes { font-style: italic; }
+.plate__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-24);
+  margin-top: var(--space-24);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--border);
+}
+.stamp {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  width: 96px;
+  height: 96px;
+  flex: none;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-pill);
+  color: var(--primary);
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label-tight);
+  text-transform: uppercase;
+  text-align: center;
+}
+.stamp__rule {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--primary);
+}
+.plate__amount {
+  text-align: right;
+}
+.plate__price {
+  display: block;
+  margin-top: var(--space-4);
+  font-size: var(--text-3xl);
+  line-height: var(--text-3xl-lh);
+  letter-spacing: var(--tracking-tight);
+  color: var(--primary);
+}
+
+/* ---------- Catalog: an editorial index of folios, never a card grid ---------- */
+/* Section head: the title left, the colophon-style note right — one line tall, so
+   the first viewport ends on the rule and not through a line of text. */
+.catalog {
+  padding-bottom: var(--space-96);
+  border-top: 1px solid var(--border);
+}
+.catalog__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-32);
+  padding-top: var(--space-16);
+}
+.catalog__title {
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-regular);
+}
+.catalog__note {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+  max-width: var(--measure-narrow);
+}
+.catalog__aside { text-align: right; }
+
+.catalog__columns,
+.row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 220px 180px 140px 32px;
+  gap: var(--space-24);
+  align-items: baseline;
+}
+.catalog__columns {
+  margin-top: var(--space-40);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid var(--border);
+}
+.catalog__columns .label:last-child { justify-self: end; }
+.catalog__columns .is-right { text-align: right; }
+
+.row {
+  padding-block: var(--space-16);
+  border-bottom: 1px solid var(--border-faint);
+  transition: background-color var(--duration-hover) var(--ease-out);
+}
+.row:hover { background-color: var(--accent); }
+.row__folio {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-label-tight);
+  color: var(--muted-foreground);
+}
+.row__name {
+  font-size: var(--text-xl);
+  line-height: var(--text-xl-lh);
+  letter-spacing: var(--tracking-normal);
+}
+.row__name a {
+  text-decoration: none;
+  transition: color var(--duration-hover) var(--ease-out);
+}
+.row__name a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 4px;
+}
+.row__name a:active { color: var(--muted-foreground); }
+.row__origin {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--muted-foreground);
+}
+.row__process {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label-tight);
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.row__price {
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  text-align: right;
+}
+.row__arrow {
+  justify-self: end;
+  color: var(--muted-foreground);
+  transition: color var(--duration-hover) var(--ease-out),
+              transform var(--duration-hover) var(--ease-out);
+}
+.row:hover .row__arrow { color: var(--foreground); transform: translateX(2px); }
+
+/* ---------- Subscription strip: a band between rules, one text action ---------- */
+.strip { padding-block: var(--space-96); border-top: 1px solid var(--border); }
+.strip__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-48);
+}
+.strip__title {
+  font-size: var(--text-3xl);
+  line-height: var(--text-3xl-lh);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-regular);
+}
+.strip__copy {
+  margin-top: var(--space-12);
+  font-size: var(--text-base);
+  line-height: var(--text-base-lh);
+  color: var(--muted-foreground);
+  max-width: var(--measure-narrow);
+}
+.strip__cta {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs-lh);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 8px;
+  padding-block: var(--space-8);
+  transition: color var(--duration-hover) var(--ease-out);
+}
+.strip__cta:hover { color: var(--primary-hover); }
+.strip__cta:active { color: var(--foreground); }
+
+/* ---------- Footer: the folio line ---------- */
+.colophon { border-top: 1px solid var(--border); padding-block: var(--space-48); }
+.colophon__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+}
+.colophon__cell a { text-decoration-color: var(--border); }
+.colophon__cell a:hover { text-decoration-color: var(--foreground); }
+.colophon__legal {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-24);
+  margin-top: var(--space-40);
+  padding-top: var(--space-16);
+  border-top: 1px solid var(--border-faint);
+}
+
+/* ---------- Motion: a printed page fades in, nothing travels ---------- */
+@keyframes printed-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------- Below the 1440 board: stack, never hide ---------- */
+@media (max-width: 1180px) {
+  .container { padding-inline: var(--space-24); }
+  .masthead__inner { grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-12); }
+  .masthead__meta { grid-column: 1 / -1; justify-self: start; text-align: left; }
+  .hero__grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-64); }
+  .hero__title { font-size: var(--text-5xl); }
+  .catalog__columns { display: none; }
+  .row { grid-template-columns: 40px minmax(0, 1fr) auto; }
+  .row__origin, .row__process { grid-column: 2; }
+  .row__price { grid-column: 3; grid-row: 1; }
+  .row__arrow { display: none; }
+  .strip__inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-24); }
+  .colophon__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-16); }
+}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#indice">Ir al índice de tuestes</a>
+
+<header class="masthead">
+  <div class="container masthead__inner">
+    <a class="wordmark" href="#top" aria-label="Molino, tostaduría en Colegiales">
+      <span class="wordmark__name">Molino</span>
+    </a>
+    <nav class="masthead__nav" aria-label="Secciones">
+      <a class="navlink is-current" href="01-tienda.html" aria-current="page">Tienda</a>
+      <a class="navlink" href="02-suscripcion.html">Suscripción</a>
+      <a class="navlink" href="#taller">Taller</a>
+      <a class="navlink" href="#diario">Diario</a>
+    </nav>
+    <p class="label masthead__meta">Buenos Aires · jueves 12 de noviembre</p>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__lede">
+        <h1 class="hero__title" id="hero-title">Café del<br>jueves.</h1>
+        <p class="hero__deck">Tostamos un lote por semana y lo entregamos el jueves.
+          Doscientos cincuenta gramos con la fecha de tueste impresa en la etiqueta y
+          la nota de cata escrita a mano: panela, naranja de ombligo, cacao amargo.
+          <em>Nada se muele antes de que lo pidas.</em></p>
+        <dl class="hero__facts">
+          <div class="fact">
+            <dt class="label">Tueste</dt>
+            <dd>martes 10 de noviembre</dd>
+          </div>
+          <div class="fact">
+            <dt class="label">Entrega</dt>
+            <dd>jueves 12, de 9 a 19</dd>
+          </div>
+          <div class="fact">
+            <dt class="label">Lote</dt>
+            <dd>47, 18 kilos</dd>
+          </div>
+          <div class="fact">
+            <dt class="label">Retiro</dt>
+            <dd>Cochabamba 1874</dd>
+          </div>
+        </dl>
+      </div>
+
+      <aside class="plate" aria-labelledby="plate-title">
+        <div class="plate__top">
+          <span class="label">Tueste de la semana</span>
+          <span class="label">N° 47</span>
+        </div>
+        <h2 class="plate__title" id="plate-title">La Esperanza</h2>
+        <p class="plate__origin">Chiapas, México · Finca de 6 hectáreas</p>
+        <dl class="plate__rows">
+          <div class="plate__row">
+            <dt class="label">Altitud</dt>
+            <dd class="figures">1.450 msnm</dd>
+          </div>
+          <div class="plate__row">
+            <dt class="label">Variedad</dt>
+            <dd>Bourbon y Typica</dd>
+          </div>
+          <div class="plate__row">
+            <dt class="label">Proceso</dt>
+            <dd>Lavado · 14 días de secado</dd>
+          </div>
+          <div class="plate__row">
+            <dt class="label">Tueste</dt>
+            <dd>Medio · 11 minutos</dd>
+          </div>
+          <div class="plate__row">
+            <dt class="label">Notas</dt>
+            <dd class="plate__notes">Panela, naranja de ombligo, cacao amargo</dd>
+          </div>
+        </dl>
+        <div class="plate__foot">
+          <span class="stamp" aria-label="Sello de origen: Chiapas, México">
+            Chiapas
+            <span class="stamp__rule" aria-hidden="true"></span>
+            México
+          </span>
+          <span class="plate__amount">
+            <span class="label">250 g molido a pedido</span>
+            <span class="plate__price figures">$ 12.400</span>
+          </span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="catalog" id="indice" aria-labelledby="catalog-title">
+    <div class="container">
+      <div class="catalog__head">
+        <h2 class="catalog__title" id="catalog-title">Índice de tuestes</h2>
+        <div class="catalog__aside">
+          <span class="label">Actualizado el martes 10</span>
+          <p class="catalog__note">Cinco lotes en carta. 250 g, molido a pedido.</p>
+        </div>
+      </div>
+
+      <div class="catalog__columns" role="presentation">
+        <span class="label">N°</span>
+        <span class="label">Café</span>
+        <span class="label">Origen</span>
+        <span class="label">Proceso</span>
+        <span class="label is-right">Precio</span>
+        <span class="label" aria-hidden="true"></span>
+      </div>
+
+      <ol class="catalog__list">
+        <li class="row">
+          <span class="row__folio">01</span>
+          <span class="row__name"><a href="#lote-01">La Esperanza</a></span>
+          <span class="row__origin">Chiapas, México</span>
+          <span class="row__process">Lavado</span>
+          <span class="row__price figures">$ 12.400</span>
+          <span class="row__arrow" aria-hidden="true">→</span>
+        </li>
+        <li class="row">
+          <span class="row__folio">02</span>
+          <span class="row__name"><a href="#lote-02">El Mirador</a></span>
+          <span class="row__origin">Huila, Colombia</span>
+          <span class="row__process">Honey</span>
+          <span class="row__price figures">$ 13.900</span>
+          <span class="row__arrow" aria-hidden="true">→</span>
+        </li>
+        <li class="row">
+          <span class="row__folio">03</span>
+          <span class="row__name"><a href="#lote-03">Worka Sakaro</a></span>
+          <span class="row__origin">Yirgacheffe, Etiopía</span>
+          <span class="row__process">Natural</span>
+          <span class="row__price figures">$ 14.700</span>
+          <span class="row__arrow" aria-hidden="true">→</span>
+        </li>
+        <li class="row">
+          <span class="row__folio">04</span>
+          <span class="row__name"><a href="#lote-04">El Cedro</a></span>
+          <span class="row__origin">Cajamarca, Perú</span>
+          <span class="row__process">Lavado</span>
+          <span class="row__price figures">$ 11.800</span>
+          <span class="row__arrow" aria-hidden="true">→</span>
+        </li>
+        <li class="row">
+          <span class="row__folio">05</span>
+          <span class="row__name"><a href="#lote-05">Boa Vista</a></span>
+          <span class="row__origin">Cerrado, Brasil</span>
+          <span class="row__process">Pulpa natural</span>
+          <span class="row__price figures">$ 9.800</span>
+          <span class="row__arrow" aria-hidden="true">→</span>
+        </li>
+      </ol>
+      <!-- States: the index is a five-lot static catalog; empty, loading and error
+           states do not exist for a fixed folio list. Deliberately out of scope
+           (Professional Pass F2), recorded in design.json. The row hover/focus state
+           and the "lote agotado" state would live on the detail page (#lote-01…05). -->
+    </div>
+  </section>
+
+  <section class="strip" aria-labelledby="strip-title">
+    <div class="container strip__inner">
+      <div>
+        <h2 class="strip__title" id="strip-title">Una bolsa cada jueves.</h2>
+        <p class="strip__copy">Elegís molienda y frecuencia una sola vez. Pausás cuando
+          te vas de viaje, volvés cuando querés.</p>
+      </div>
+      <a class="strip__cta" href="02-suscripcion.html">Suscribirme →</a>
+    </div>
+  </section>
+</main>
+
+<footer class="colophon">
+  <div class="container">
+    <div class="colophon__row">
+      <p class="label colophon__cell">Molino · Cochabamba 1874 ·
+        Colegiales, Buenos Aires</p>
+      <p class="label colophon__cell">Jueves a domingo · 9 a 19</p>
+      <p class="label colophon__cell"><a href="#instagram">Instagram</a> ·
+        <a href="#whatsapp">WhatsApp</a></p>
+      <p class="label colophon__cell">Tienda — folio 1</p>
+    </div>
+    <p class="label colophon__legal">
+      <span>© 2026 Molino. Tostado en el taller, a cuatro cuadras de la estación.</span>
+      <span>Impreso en papel de 90 g</span>
+    </p>
+  </div>
+</footer>
+</body>
+</html>

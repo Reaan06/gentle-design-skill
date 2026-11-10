@@ -1,0 +1,21 @@
+{
+  "title": "Molino — dirección Editorial / Print",
+  "brief": "Molino es una tostaduría de barrio en Colegiales, Buenos Aires: tuesta los martes, entrega los jueves, una etiqueta impresa por lote. Dos tableros ejecutan el Direction Contract congelado en direction.md (Editorial / Print): una tienda de 1440x900 cuyo primer viewport es exactamente el del contrato — titular serif enorme a la izquierda sobre columna de 65ch y, a la derecha, la etiqueta del tueste de la semana como placa impresa con sello de origen — y una página de suscripción de 1440x900 con el mismo sistema, boletas de molienda y frecuencia impresas, y la placa de resumen con sus estados diseñados. Un solo bloque de tokens semánticos, byte-idéntico en ambos tableros: papel #FAF7F2, tinta #1A1815, un único croma (oxblood #7F1D1D) gastado como máximo tres veces por vista, reglas de tinta al 60%/20% en lugar de sombras, radio 0.125rem con pill solo para el sello, rampa de 4px y motion de fades de 300-400ms. Documentación: tokens.md (contrato + block), DESIGN.md (tokens YAML + rationale, lint limpio).",
+  "artboards": [
+    {
+      "file": "01-tienda.html",
+      "title": "Tienda — el tueste de la semana",
+      "tradeoff": "Primer viewport exactamente el del contrato: 'Café del / jueves.' a 72/1 con -0.03em sobre una columna de 65ch, y la etiqueta del lote 47 como placa impresa (origen, altitud, variedad, proceso, minutos de tueste, notas de cata) con el sello redondo de origen como único pill del sistema. La fila de datos (tueste, entrega, lote, retiro) está anclada al pie de la placa para que las dos columnas terminen en la misma línea. El catálogo es un índice de folios real (ol de 5 lotes, precios tabulares alineados a su encabezado, reglas al 20%), no una grilla de cards; el pliegue de 900px corta en el encabezado del índice, así que el tablero declara viewport, no altura de página (sh 1840px). Oxblood gastado 3 veces: precio semanal, sello, acción de suscripción. Empty/loading/error quedan fuera de alcance para un índice fijo de cinco lotes (declarado en el markup). Sin re-map dark: la dirección es papel, y su gemelo oscuro sería otro own-world; fuera de alcance de este brief. El grano ≤3% del contrato se omite porque solo se implementa con gradiente o filtro y los gradientes están prohibidos.",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "02-suscripcion.html",
+      "title": "Suscripción — molienda y frecuencia",
+      "tradeoff": "Continuación del mismo sistema: migas de pan, titular 60/1, entradilla 18/28 con capitular impresa (48px), y el formulario como boleta: radios/checkbox nativos visualmente ocultos pero focusables, marca cuadrada de 20px con borde de tinta y cuadrado interior de 12px al seleccionar, filas regladas al 20%, hover en el wash accent, :active en el wash secundario, :focus-visible de 2px sobre la marca, y una opción disabled real (prensa francesa sin stock) al 45% con motivo escrito. Campos como línea impresa (borde inferior 1px de tinta, sin caja). La placa de resumen es el único rectángulo con borde completo además de la etiqueta del 01: filas, subtotales tabulares, total 36px oxblood y el CTA lleno 'Empezar mi suscripción' (scale 0.97 al presionar, hover por mezcla de tinta, no por opacidad). Los estados vacío/cargando/error van como tira de especímenes bajo la placa, con la placa poblada como estado visible. Oxblood 3 veces: total, CTA, etiqueta Error. Los dos tableros comparten :root byte-idéntico, verificado mecánicamente, y difieren solo en contenido y geometría de columna.",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "feature": "odd/tasks/gentle-design-skill.md"
+}
