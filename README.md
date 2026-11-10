@@ -10,15 +10,17 @@ Built by **reverse engineering** (REA methodology) how professional AI design to
 
 | Layer | File | Source of the rules |
 | --- | --- | --- |
-| Evidence log | `references/evidence.md` | shadcn/ui runtime captures, v0/Stitch official docs, Tailwind v4, Radix, Anthropic/Vercel/Lovable engineering posts |
-| Token system | `references/token-system.md` | shadcn semantic roles, Tailwind 4px ramp + type scale, Radix 12-step accent ramps |
+| Evidence log | `references/evidence.md` | shadcn/ui runtime captures, v0/Stitch/Figma Make & Agent official docs, Tailwind v4, Radix, Anthropic/Vercel/Lovable engineering posts (`E1`–`E12`) |
+| Token system | `references/token-system.md` | shadcn semantic roles (`on-*` contrast pairs), Tailwind 4px ramp + type scale, Radix 12-step accent ramps, `DESIGN.md` lint workaround |
+| Composition patterns | `references/composition-patterns.md` | Figma Make Kits & Auto Layout sizing contracts, decision trees, button frequency & group symmetry, `CORRECT / WRONG` pairs |
 | Anti-generic playbook | `references/generic-vs-professional.md` | published anti-slop skills (substitution test, visual thesis, named alternatives, mechanical tells) |
 | Art-direction catalog | `references/style-directions.md` | 8 named directions (Swiss, Editorial, Brutalist, Terminal, Soft SaaS, Luxury, Playful, Dark Glass) + Direction Contract |
-| Platform rules | `references/platform-web.md` · `-mobile.md` · `-desktop.md` | web/marketing/dashboard, iOS+Material mobile, desktop-class density/keyboard |
-| Dark mode | `references/dark-mode.md` | 11-role re-mapping, lightness-ladder elevation, Linear's LCH model |
-| Harness architecture | `references/harness-architecture.md` | how Stitch, design.md, v0, Anthropic skills, Lovable work internally |
-| Pre-delivery checklist | `references/professional-pass.md` | ~40 mechanical checks + render→screenshot→critique loop |
-| **Deterministic gate** | `scripts/design-gate.py` | 12 static rules (tokens, 4px ramp, `transition: all`, tells) — exits 0/1, `--json` mode |
+| Platform rules | `references/platform-web.md` · `-mobile.md` · `-desktop.md` | web/marketing/dashboard, iOS+Material mobile, desktop-class density/keyboard, Default/Loading/Empty/Error State Switchers |
+| Dark mode | `references/dark-mode.md` | 11-role re-mapping, lightness-ladder elevation, contrast on dark pairs |
+| Harness architecture | `references/harness-architecture.md` | how Stitch, design.md, v0, Anthropic skills, Figma Make Kits, Lovable work internally |
+| Pre-delivery checklist | `references/professional-pass.md` | ~40 mechanical checks + Traffic-Light Critique (`ROJO`/`AMARILLO`/`VERDE`) + render→screenshot→critique loop |
+| **Static gate** | `scripts/design-gate.py` | 17 static rules (`R1`–`R17`: tokens, 4px ramp, `on-*` pairing, wrapper borders, micro-text, media attrs, `:root` contrast) — exits 0/1, `--json` mode |
+| **Visual browser audit** | `scripts/visual-audit.py` | headless Chromium (`agent-browser`) check at `1440x900` + `390x844` for horizontal overflow, clipped text, and computed WCAG AA contrast |
 
 ## How it works in a session
 
@@ -34,7 +36,8 @@ Copy the skill into your agent's skill directory (Gentle Shell / Pi reads `~/.ag
 
 ```bash
 git clone https://github.com/Reaan06/gentle-design-skill
-cp -r gentle-design-skill/skill/gentle-design-skill ~/.agents/skills/
+mkdir -p ~/.agents/skills/gentle-design-skill
+cp -r gentle-design-skill/skill/. ~/.agents/skills/gentle-design-skill/
 ```
 
 Requires: [gentle-shell](https://github.com/Gentleman-Programming/gentle-shell) (or any Pi runtime) with the `gentle-design` + `gentle-ui-design` skills; Python 3 stdlib for the gate; optional `npx @google/design.md` for DESIGN.md linting.

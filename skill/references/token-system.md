@@ -13,14 +13,27 @@ Eleven roles, captured live from `ui.shadcn.com` default theme (`capture`, E1):
 | `--foreground` | near-black | primary text |
 | `--card` | white | card surface (equals background — cards separate via border, not fill) |
 | `--primary` | near-black (foreground-toned) | ONE action color; near-monochrome by default |
+| `--primary-foreground` | white (or high-contrast ink) | Mandatory `on-brand` pair for any text/icon on `--primary` (E12) |
 | `--secondary` | light gray (`lab 96.5%`) | soft action / secondary button |
 | `--muted` | light gray | muted surface AND muted text (`--muted-foreground`) |
 | `--accent` | light gray | hover wash |
-| `--destructive` | red | destructive actions only |
+| `--destructive` | red | destructive actions only (pair with `--destructive-foreground` / `--primary-foreground`) |
 | `--border` | gray (`lab 90.95%`) | 1px structure — the primary separator, not shadows |
 | `--input` | gray | control borders |
 | `--ring` | mid gray | focus ring |
 | `--radius` | `0.625rem` (10px) | single radius token with derived variants |
+
+**`on-*` contrast pairing (E12)**: never pair `--primary` background with
+`--foreground` text — in dark or vibrant themes they collide. Always define and apply
+`--primary-foreground` (or `--on-brand`) and keep `--on-reverse` when an element must
+stay dark/light across mode switches.
+
+**`DESIGN.md` lint workaround (`@google/design.md lint`)**: Google's CLI linter parses
+alpha colors (`rgba(...)`, 8-digit hex) as if composited over opaque `#FFFFFF` when
+checking WCAG contrast, producing false contrast errors on dark translucent washes.
+In `DESIGN.md`, declare translucent ink/wash tokens with `textColor` (never `bgColor`
++ `textColor` on an alpha swatch) or composite them to solid opaque hex approximations
+specifically in the `DESIGN.md` table while keeping true alpha variables in CSS.
 
 **Dark mode** re-maps the same roles (background → near-black, borders → low-alpha
 white); components never hard-code colors. Derived variants:

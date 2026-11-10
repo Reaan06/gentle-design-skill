@@ -46,6 +46,9 @@ Desktop is where **density** is a feature and keyboard is a first-class input.
 
 ## 4. Dense-data states (E3)
 
+- **State Switcher** (recommended for workspace/tool artboards): place a 4-pill switcher
+  (`Default` / `Loading` / `Empty` / `Error`) in the outer workspace preview strip or
+  right toolbar edge so all four pane states are verifiable in one HTML file.
 - Tables: 32px rows, sticky header with 1px bottom border, right-aligned numerics,
   column sort indicators (▲▼ at 60% alpha), row selection via checkbox column 32px.
 - Virtualized-list look: 10–20 visible rows minimum; empty state compact (icon+line,

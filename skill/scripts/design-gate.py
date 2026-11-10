@@ -53,6 +53,11 @@ Each rule is a mechanical restatement of one Professional Pass item:
     R10 numbered-markers         -> G4       (decorative 01/02/03; review flag)
     R11 radius-drift             -> E1
     R12 transition-duration-tell -> F3       (100-250ms micro-transitions)
+    R13 unsafe-on-primary        -> A2, E12  (--primary-foreground / --on-brand pairing)
+    R14 wrapper-border-box       -> D, E12   (non-interactive layout wrappers with full box borders)
+    R15 micro-text-size          -> B1       (font-size literals < 12px / < 0.75rem)
+    R16 media-dimensions-alt     -> F1, G    (<img> alt+dimensions, <svg> width/height)
+    R17 root-contrast-pair       -> C3, E12  (static WCAG AA >= 4.5:1 on hex pairs in :root)
 
 Deliberate allowances (kept narrow so the gate stays quiet on real artboards)
 ---------------------------------------------------------------------------
@@ -75,8 +80,12 @@ boundary of a static scan)
 * Rules R10 (numbered markers) and R9 are conservative and can only flag; the gate
   cannot know whether `01/02/03` is a real sequence or an emoji is meaningful.
 * Durations and colors behind `var()` cannot be evaluated statically.
-* `width`/`height`/`font-size` literals are *not* checked here — the type and size
-  ramps are verified by the checklist items B1/B3, which need semantic intent.
+* `width`/`height`/`font-size` rules: `R15` checks explicit `font-size` literals
+  below `12px`/`0.75rem`, while `var(--text-*)` indirections and layout sizing remain
+  covered by checklist items B1/B3 and `visual-audit.py`.
+* `R17` checks literal hex token pairs in `:root` (when `--foreground`/`--muted-foreground`
+  /`--primary-foreground`/`--card-foreground` and their backgrounds are hex literals);
+  `oklch()`/`lab()` pairs and computed DOM contrast are verified by `visual-audit.py`.
 * Selectors are read syntactically; CSS nesting, keyframes and `@media` are handled,
   but `@supports`-style conditional token overrides other than the ones listed above
   are not classified as token blocks.
@@ -110,6 +119,11 @@ RULES = {
     "R10": "numbered-markers",
     "R11": "radius-drift",
     "R12": "transition-duration-tell",
+    "R13": "unsafe-on-primary",
+    "R14": "wrapper-border-box",
+    "R15": "micro-text-size",
+    "R16": "media-dimensions-alt",
+    "R17": "root-contrast-pair",
 }
 
 #: shadcn/ui semantic roles (token-system.md §1, evidence E1).
@@ -118,6 +132,7 @@ SEMANTIC_TOKENS = (
     "foreground",
     "card",
     "primary",
+    "primary-foreground",
     "secondary",
     "muted",
     "accent",
@@ -173,6 +188,13 @@ COLOR_ATTR_RE = re.compile(
     re.IGNORECASE,
 )
 STYLE_ATTR_RE = re.compile(r"(?<![\w-])style\s*=\s*[\"']([^\"']*)[\"']", re.IGNORECASE)
+LAYOUT_WRAPPER_SEL_RE = re.compile(
+    r"(?:^|[\s,>])(?:section|main|header|footer|article|aside"
+    r"|\.(?:section|wrapper|container|layout|grid|stack|band|shell|panel-grid|hero-grid))\b",
+    re.IGNORECASE,
+)
+REM_RE = re.compile(r"(?<![\w.-])(-?\d+(?:\.\d+)?)rem\b", re.IGNORECASE)
+ATTR_CHECK_RE = re.compile(r"\b(width|height|alt)\s*=", re.IGNORECASE)
 STYLE_BLOCK_RE = re.compile(r"<style\b[^>]*>(.*?)</style>", re.IGNORECASE | re.DOTALL)
 SCRIPT_BLOCK_RE = re.compile(r"<script\b[^>]*>(.*?)</script>", re.IGNORECASE | re.DOTALL)
 
@@ -421,17 +443,73 @@ class Gate:
 
     # -- declarations --------------------------------------------------------
 
-    def _for_each_declaration(self, text, start, end, allow_color):
+    def _for_each_declaration(self, text, start, end, allow_color, selector=""):
         """Dispatch every declaration in a leaf body / inline style to the rules."""
-        for prop, value, prop_off, value_start, _value_end in parse_declarations(
-            text, start, end
-        ):
+        decls = parse_declarations(text, start, end)
+        decl_map = {prop.lower(): value.strip() for prop, value, *_ in decls}
+        self._rule_block_pairing(decls, decl_map)
+        self._rule_wrapper_border(selector, decls)
+        for prop, value, prop_off, value_start, _value_end in decls:
             low = value.lower()
             self._rule_color(value, prop_off, value_start, allow_color)
             self._rule_spacing(prop, value, prop_off)
             self._rule_transition(prop, value, prop_off, low)
             self._rule_radius(prop, value, prop_off)
             self._rule_font(prop, value, prop_off)
+            self._rule_micro_text(prop, value, prop_off)
+
+    def _rule_block_pairing(self, decls, decl_map):
+        """R13 unsafe-on-primary when var(--primary) bg pairs with var(--foreground)."""
+        bg = decl_map.get("background") or decl_map.get("background-color") or ""
+        fg = decl_map.get("color", "")
+        if "var(--primary)" in bg and "var(--foreground)" in fg:
+            prop_off = next(
+                (off for p, _v, off, *_ in decls if p.lower() == "color"),
+                decls[0][2],
+            )
+            self.add(
+                "R13",
+                prop_off,
+                "background `var(--primary)` paired with `var(--foreground)` — "
+                "use `var(--primary-foreground)` (or `var(--on-brand)`) (E12)",
+            )
+
+    def _rule_wrapper_border(self, selector, decls):
+        """R14 wrapper-border-box on non-interactive layout wrappers."""
+        if not selector or not LAYOUT_WRAPPER_SEL_RE.search(selector):
+            return
+        for prop, value, prop_off, *_ in decls:
+            if prop.lower() != "border":
+                continue
+            val = value.strip().lower()
+            if re.match(r"^(?:0(?:px)?|none|unset|initial)\b", val):
+                continue
+            self.add(
+                "R14",
+                prop_off,
+                f"full box `border` on layout wrapper `{selector}` — prefer surface "
+                f"contrast, spacing, or a single-edge divider (`border-top`/`border-bottom`) (E12)",
+            )
+
+    def _rule_micro_text(self, prop, value, prop_off):
+        """R15 micro-text-size (< 12px / < 0.75rem)."""
+        if prop.lower() != "font-size":
+            return
+        m_px = PX_RE.search(value)
+        if m_px and 0 < float(m_px.group(1)) < 12:
+            self.add(
+                "R15",
+                prop_off,
+                f"font-size {m_px.group(0)} < 12px — keep UI text >= 12px (`0.75rem`) for legibility (B1)",
+            )
+            return
+        m_rem = REM_RE.search(value)
+        if m_rem and 0 < float(m_rem.group(1)) < 0.75:
+            self.add(
+                "R15",
+                prop_off,
+                f"font-size {m_rem.group(0)} < 0.75rem (12px) — keep UI text >= 12px (B1)",
+            )
 
     def _rule_color(self, value, prop_off, value_start, allow_color):
         """R2 raw-color-outside-root (and R8 for gradient slop hexes).
@@ -575,7 +653,7 @@ class Gate:
     # -- file-global rules ---------------------------------------------------
 
     def _rule_token_block(self):
-        """R1 token-block."""
+        """R1 token-block, R13 on-primary role presence, and R17 root hex contrast."""
         if self.root_block is None:
             self.add(
                 "R1",
@@ -585,14 +663,71 @@ class Gate:
             )
             return
         body = self.css_clean[self.root_block["body_start"] : self.root_block["body_end"]]
-        declared = {prop for prop, *_ in parse_declarations(body, 0, len(body))}
+        decls = parse_declarations(body, 0, len(body))
+        declared = {prop: val.strip() for prop, val, *_ in decls}
         for token in SEMANTIC_TOKENS:
             if f"--{token}" not in declared:
+                if token == "primary-foreground":
+                    if "--on-brand" not in declared:
+                        self.add(
+                            "R13",
+                            self.root_block["body_start"],
+                            "missing `--primary-foreground` (or `--on-brand`) in :root "
+                            "— pair every `--primary` surface with an explicit on-brand ink (E12)",
+                        )
+                    continue
                 self.add(
                     "R1",
                     self.root_block["body_start"],
                     f"missing semantic token `--{token}` in :root (A1/A2, E1)",
                 )
+        self._check_root_contrast(declared)
+
+    @staticmethod
+    def _parse_hex_rgb(val):
+        m = re.fullmatch(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", val.strip())
+        if not m:
+            return None
+        h = m.group(1)
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
+
+    @staticmethod
+    def _contrast_ratio(rgb_a, rgb_b):
+        def lum(rgb):
+            def ch(c):
+                s = c / 255.0
+                return s / 12.92 if s <= 0.03928 else ((s + 0.055) / 1.055) ** 2.4
+
+            return 0.2126 * ch(rgb[0]) + 0.7152 * ch(rgb[1]) + 0.0722 * ch(rgb[2])
+
+        la, lb = lum(rgb_a), lum(rgb_b)
+        return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+    def _check_root_contrast(self, declared):
+        """R17 root-contrast-pair on literal hex foreground/background token pairs."""
+        pairs = [
+            ("--foreground", "--background"),
+            ("--muted-foreground", "--background"),
+            ("--primary-foreground", "--primary"),
+            ("--on-brand", "--primary"),
+            ("--card-foreground", "--card"),
+        ]
+        for fg_tok, bg_tok in pairs:
+            if fg_tok not in declared or bg_tok not in declared:
+                continue
+            fg_rgb = self._parse_hex_rgb(declared[fg_tok])
+            bg_rgb = self._parse_hex_rgb(declared[bg_tok])
+            if fg_rgb and bg_rgb:
+                ratio = self._contrast_ratio(fg_rgb, bg_rgb)
+                if ratio < 4.5:
+                    self.add(
+                        "R17",
+                        self.root_block["body_start"],
+                        f"`:root` pair `{fg_tok}` on `{bg_tok}` has contrast "
+                        f"{ratio:.2f}:1 (< 4.5:1 WCAG AA) (C3, E12)",
+                    )
 
     def _rule_motion(self):
         """R5 missing-reduced-motion."""
@@ -711,6 +846,31 @@ class Gate:
                     f"var(--token) (A2)",
                 )
 
+    def _rule_media_tags(self):
+        """R16 media-dimensions-alt on <img> and <svg> elements."""
+        for m in TAG_RE.finditer(self.markup):
+            if m.group(1):
+                continue
+            name = m.group(2).lower()
+            attrs = m.group(3) or ""
+            found = {a.lower() for a in ATTR_CHECK_RE.findall(attrs)}
+            if name == "img":
+                missing = [req for req in ("alt", "width", "height") if req not in found]
+                if missing:
+                    self.add(
+                        "R16",
+                        m.start(),
+                        f"<img> missing {', '.join(missing)} attribute(s) — set explicit dimensions and alt text (F1)",
+                    )
+            elif name == "svg":
+                missing = [req for req in ("width", "height") if req not in found]
+                if missing:
+                    self.add(
+                        "R16",
+                        m.start(),
+                        f"<svg> missing {', '.join(missing)} attribute(s) — declare explicit pixel dimensions to avoid layout shift (F1)",
+                    )
+
     # -- driver --------------------------------------------------------------
 
     def run(self):
@@ -725,11 +885,13 @@ class Gate:
                 block["body_end"],
                 allow_color=self._is_token_remap(block["selector"])
                 or block is self.root_block,
+                selector=self._normalized(block["selector"]),
             )
         self._rule_inline_and_attributes()
         self._rule_motion()
         self._rule_focus()
         self._rule_icons()
+        self._rule_media_tags()
         return self._sorted_findings()
 
     def _sorted_findings(self):
@@ -757,7 +919,7 @@ def main(argv=None):
         prog="design-gate.py",
         description=(
             "Deterministic mechanical design gate for gentle-design-skill artboards "
-            "(12 rules; see references/professional-pass.md)."
+            "(17 rules; see references/professional-pass.md)."
         ),
         epilog="Exit codes: 0 clean, 1 findings, 2 usage error.",
     )

@@ -1,0 +1,27 @@
+name: Design Gate CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gate-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run design-gate unit & artboard integration tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Run static design gate across all example artboards
+        run: python3 skill/scripts/design-gate.py examples/*/*.html

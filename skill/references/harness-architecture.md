@@ -47,11 +47,15 @@ and primitives live outside the context budget.
 ## P5 — Progressive disclosure of guidance
 
 **Who**: Figma Make kits ("Multiple short guidelines files are better than a few large
-files"), v0's dynamic system prompt, Stitch skill routing.
-**Mechanics**: a small index routes to granular per-concern files; only relevant
-guidance enters context.
-**Here**: this skill's own structure — SKILL.md is the index; platform references load
-per target (web/mobile/desktop); evidence.md loads only when provenance matters.
+files", decision trees, `Alt names`, `CORRECT/WRONG` snippets), v0's dynamic system
+prompt, Stitch skill routing.
+**Mechanics**: a small index routes to granular per-concern files; each component or
+composition rule uses ASCII decision trees and explicit invalid-pattern bans so
+only relevant guidance enters context.
+**Here**: this skill's own structure — `SKILL.md` is the index; platform references
+load per target (web/mobile/desktop); `composition-patterns.md` encodes Figma Make
+Kits' decision trees, frequency weights, and `CORRECT/WRONG` pairs; `evidence.md`
+loads only when provenance matters.
 
 ## P6 — Deterministic validation gates (lint, contrast, auto-retry)
 

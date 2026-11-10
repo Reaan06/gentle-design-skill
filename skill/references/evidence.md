@@ -103,7 +103,10 @@ awesome-system-prompts). Not official; used as corroborating hints, consistent w
 - v0's real system prompt is not officially published; E4 mirrors may be outdated.
 - Stitch docs page (stitch.withgoogle.com/docs/learn/overview) blocked automated
   extraction; E5 relies on llms.txt, official Google Labs repos, and community guide.
-- Figma Agent output internals are undocumented; E6 covers Figma Make guidance only.
+- Figma Agent output internals are undocumented; E6 covered Make Kits overview,
+  while E11–E12 extend it with live Figma product captures and full Make Kits + Agent
+  docs. `figma.com/community/explore` returned CDN error ("request could not be
+  satisfied") during automated capture and remains excluded.
 
 ## E9 — Design harness architectures (official sources, 2026-11-10)
 
@@ -187,3 +190,65 @@ Public skills and guides whose explicit goal is output that does not look like
 - vercel.com/font: matched multi-axis family (Geist) with equal x-heights across
   Sans/Mono/Serif.
 - boring.design: JS-rendered page, content not verifiable (excluded).
+
+## E11 — Runtime capture: Figma live web surfaces (`figma.com/make/`, `/design/`, `/sites/`)
+
+Captured live with `agent-browser` (Chrome headless DOM & computed-style inspection) across
+Figma's own marketing and product surfaces:
+
+- **`figma.com/make/`** (`capture`): pure white section canvas (`rgb(255, 255, 255)`,
+  `border-width: 0px`), consistent `80px` vertical section padding; font stack
+  `figmaSans` (`SF Pro Display`, `system-ui`, `helvetica`, `sans-serif`) + `figmaMono`.
+  Dominant measured scale: `18px/25.2px` weight `330` (275 instances — comfortable lead/body
+  copy), `16px/22.4px` weight `400` (22), `30px/36px` tracking `-0.66px` weight `400` (19),
+  `16px/23.2px` weight `400` (16), `44px/48.4px` tracking `-0.66px` weight `400` (10),
+  `16px/20.8px` tracking `+0.64px` weight `400` (5 — uppercase/tracked labels). Monochrome
+  black/white base + subtle neutral wash (`oklch(0 0 none / 0.04)`) and sparing accents
+  (`rgb(203, 159, 210)` lilac, `rgb(210, 217, 226)` slate).
+- **`figma.com/design/`** (`capture`): H1 `44px/48.4px` (`-0.66px`, `weight 400`); dominant
+  scale `18px/25.2px` w330 (129), `16px/22.4px` w400 (92), `16px/23.2px` w320 (83),
+  `30px/36px` w400 (32), `44px/48.4px` w400 (7). Measured `bordersVsSurfaces` ratio:
+  `{bordered: 1, shadowed: 1, surfaceCards: 0}` — hierarchy via whitespace, typography, and
+  surface contrast rather than card-border grids. Radii clustered sharply at `2px` (31),
+  `9999px` (16), `4px` (15), `8px` (9), `24px` (8).
+- **`figma.com/sites/`** (`capture`): high-contrast monochrome CTAs (`rgb(0,0,0)` bg +
+  `rgb(255,255,255)` text, `46px` height, `8px` radius, `16–18px` font) paired with
+  crisp `3px solid #000` editorial blocks (`24px 32px` padding, `0px` radius).
+- **Interpretation**: Figma's own web surfaces avoid the generic `16px` + `1px bordered card`
+  grid trap. They keep canvases stark white, tighten display tracking (`-0.015em` to
+  `-0.02em`), rely on `16–18px` breathable copy with light/regular weights (`320–400`),
+  reserve borders for deliberate editorial framing or interactive controls, and spend
+  pastel/brand accents in tiny, isolated moments.
+
+## E12 — Source: Figma Make Kits guidelines & Figma Agent best practices
+
+Extracted from official Figma documentation (`developers.figma.com/docs/code/write-design-system-guidelines`,
+`help.figma.com/hc/en-us/articles/38978644498199`, `figma.com/blog/how-to-put-your-design-system-to-work-with-the-figma-agent/`):
+
+1. **Composition over naked atoms**: Help Center explicitly states atomic buttons/inputs
+   alone "are difficult for AI to compose into coherent layouts on their own"; AI needs
+   higher-order reusable blocks (`Card/OrderSummary/Default`, headers, feature rows) that
+   encode Auto Layout intent (`fill container`, `hug contents`, `fixed sizing`, min/max widths).
+2. **Decision trees & variant budgets**: Make Kits `button.md` and `color.md` use ASCII
+   decision trees for every ambiguous choice (background, text, border, button variant,
+   type class), annotate frequency weights (`primary` ~30% one per section / `neutral` ~50%
+   default / `subtle` ~20%), and explicitly ban invalid variant names (`Do NOT use "secondary",
+   "ghost", "destructive", or "link"` when closed to 3 variants).
+3. **Group symmetry & action placement**: `ButtonGroup` rule — all buttons in one group share
+   the exact same size variant (never mix `medium` and `small`), and primary CTA sits on the
+   right (`Cancel` left, `Save` right).
+4. **Surface contrast before borders**: Make Kits `color.md` border decision tree states:
+   "Layout region boundary? → No border — use surface color contrast instead (Exception:
+   `SidebarNavigation` uses `border-r`)". Borders belong on interactive controls (`input`,
+   `select`, clickable card), not every layout wrapper.
+5. **Scale before opacity**: Make Kits typography rule: "Reduce importance through scale
+   (smaller type class), not opacity" — shrink type step while keeping readable text contrast
+   instead of washing out large labels into unreadable low-alpha gray.
+6. **Explicit `on-*` contrast pairing**: Make Kits mandates `--on-brand` / `--on-reverse`
+   alongside `--brand-primary`, showing `CORRECT` vs `WRONG` pairs (`bg-brand-primary +
+   text-on-brand` vs `bg-brand-primary + text-text-primary` where dark text vanishes).
+7. **Semantic naming & context taxonomy**: Slash-grouped names (`Button/Primary/Large`,
+   `color/surface/primary`), `Examples` / `_example` frames for multi-field form grouping,
+   progressive disclosure across short modular `.md` files with `Alt names` synonym tables
+   and concrete `CORRECT / WRONG` snippets rather than vague prose ("Do not use small text
+   for anything except captions" beats "Use small text sparingly").

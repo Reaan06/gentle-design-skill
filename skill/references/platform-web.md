@@ -39,6 +39,9 @@ also provide a 390px mobile story when the brief is responsive.
 - **States** (E3 "all states designed"): table empty state = icon + one-line message
   + primary action; loading = skeleton blocks matching final layout (never spinners
   in tables); error = inline banner on `--destructive`-tinted surface with retry.
+  For interactive product artboards, include a lightweight top-right **State Switcher**
+  (`Default` / `Loading` / `Empty` / `Error`) toggling the primary data region via a
+  short vanilla JS handler so reviewers can inspect every state live on the canvas.
 
 ## 3. Content / docs pages
 

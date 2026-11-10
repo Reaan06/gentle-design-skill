@@ -1,11 +1,11 @@
 ---
 name: gentle-design-skill
 description: "Trigger: designing UI artboards with the gentle-design workflow when the result must look professionally crafted — landing pages, dashboards, product screens, marketing pages. Encodes the design systems of Vercel v0, Google Stitch, and Figma-class AI tools (reverse-engineered with evidence) as mechanical rules: token foundation, type scale, spacing rhythm, color discipline, states, motion, and a final professional pass. Pairs with gentle-design (delivery) and gentle-ui-design (UX quality)."
-license: Apache-2.0
+license: MIT
 metadata:
   author: gentleman-programming
-  version: "1.0"
-  evidence: references/evidence.md (REA reverse engineering, v1)
+  version: "1.1.0"
+  evidence: references/evidence.md (REA reverse engineering, v1.1.0)
 ---
 
 # gentle-design-skill
@@ -73,8 +73,10 @@ Fix these before any layout. Values and sources in `references/token-system.md`.
 - **Hierarchy by weight and size, not by color**: one display size, one h-size,
   body at `--muted` gray for secondary text. Never make every line bold. Body measure
   ≤65ch–80ch; max 2 font families; `tabular-nums` on comparing numbers.
-- **Color discipline**: `--primary` used sparingly (one CTA per view); status hues
-  (green/amber/red) only for real status; grays for all structure.
+- **Restraint & hierarchy**: `--primary` used sparingly (one CTA per view); status hues
+  (green/amber/red) only for real status; grays for all structure; surface contrast
+  and spacing air before wrapper borders; scale-down before opacity-fade
+  (`references/composition-patterns.md`).
 - **Texture over decoration**: subtle gradients (radial accent glow, dotted grids,
   1px hairlines) instead of colorful blobs. Stitch's landing: black canvas + faint
   dot grid + single gradient edge (evidence E2).
@@ -87,10 +89,12 @@ Fix these before any layout. Values and sources in `references/token-system.md`.
 
 ## The Professional Gate (before reporting an artboard done)
 
-Run the deterministic gate first: `python3 <this-skill>/scripts/design-gate.py <artboard.html>`.
+Run both deterministic gates first (see `references/professional-pass.md` §H1):
+- Static 17-rule gate: `python3 <this-skill>/scripts/design-gate.py <artboard.html>`
+- Browser visual audit (desktop `1440x900` + mobile `390x844`): `python3 <this-skill>/scripts/visual-audit.py <artboard.html>`
 
-Run every item; fix or justify before finishing. Full checklist:
-`references/professional-pass.md`.
+Run every item; fix or justify before finishing using the Traffic-Light Critique
+(`ROJO` / `AMARILLO` / `VERDE`) in `references/professional-pass.md`.
 
 1. All colors/sizes/durations resolve to tokens in `:root`.
 2. ≤2 hue families + status hues; `--primary` appears on ≤3 elements per view.
@@ -135,5 +139,6 @@ pattern from `references/harness-architecture.md`) and keep it lint-clean.
 - `references/harness-architecture.md` — how AI design harnesses work internally (Stitch, design.md, v0, Anthropic, Lovable) and which patterns this skill adopts.
 - `references/dark-mode.md` — first-class dark theme rules (role re-mapping, lightness-ladder elevation, contrast on dark pairs).
 - `references/professional-pass.md` — the full pre-delivery checklist (per-platform checks at the end of each platform reference).
+- `references/composition-patterns.md` — Make Kits-style decision trees, button frequency & group symmetry, surface-vs-border hierarchy, layout intent, and `CORRECT / WRONG` pairs (E11/E12).
 - `references/generic-vs-professional.md` — the named differentiators, with fixes, plus the anti-generic playbook (thesis, register, substitution test, named alternatives).
 - `gentle-ui-design` skill — usability and adaptive-interface rules (companion).

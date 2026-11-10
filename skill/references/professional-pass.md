@@ -51,7 +51,9 @@ be checked by reading the artboard's CSS/markup. Evidence refs point to `evidenc
 
 - [ ] F1 Every interactive element: hover (subtle bg shift), `:focus-visible` (2px
       `--ring`, offset), active, disabled (reduced opacity + not-allowed).
-- [ ] F2 Empty, loading, and error states designed or explicitly declared out of scope (E3).
+- [ ] F2 Empty, loading, and error states designed or explicitly declared out of scope (E3);
+      interactive product artboards provide a `Default / Loading / Empty / Error`
+      **State Switcher** toggling the primary data container cleanly.
 - [ ] F3 Micro-transitions 100–250ms ease-out; entrances 300–500ms, stagger 40–80ms (E8).
 - [ ] F4 Only `transform`/`opacity` animated; no `transition: all` (E3).
 - [ ] F5 `prefers-reduced-motion` block present when any animation exists.
@@ -68,13 +70,27 @@ be checked by reading the artboard's CSS/markup. Evidence refs point to `evidenc
       decorative `01/02/03` markers on non-sequences, emoji icons, identical card
       rows, single-default-font dominance (E10).
 
-## H. Critique loop
+## H. Critique loop & Traffic-Light Verdict
 
-- [ ] H1 Run the deterministic gate first — `python3 <skill-path>/scripts/design-gate.py
-      <artboard.html>` — and fix all its findings **before** the render-critique loop.
-      Then render the artboard, screenshot it (canvas or agent-browser), critique against
-      the brief and this checklist, fix, re-check once (E8, E10).
+- [ ] H1 Run the deterministic gate (`python3 <skill-path>/scripts/design-gate.py <artboard.html>`)
+      and browser visual audit (`python3 <skill-path>/scripts/visual-audit.py <artboard.html>`)
+      first, fixing all blockers **before** subjective polish. Then inspect screenshots
+      against the brief and emit a structured **Traffic-Light Critique** (E8, E10, E12).
 - [ ] H2 Compare against `design/system.md` tokens when the project has one.
+
+### Traffic-Light Critique format
+
+Close every critique pass with three explicit buckets mapped to mechanical rules:
+
+- **ROJO (Blocker — must fix before delivery)**: any `design-gate.py` failure (`R1`–`R17`),
+  any `visual-audit.py` failure (horizontal overflow, text clipping, computed contrast <4.5:1
+  or <3:1 large/UI), missing `primary-foreground` pairing, broken responsive story, or A–G
+  blocker (raw colors outside `:root`, slop palette, `Inter`/`Roboto` first, missing focus ring).
+- **AMARILLO (Mejora — fix if budget allows or document tradeoff)**: `R10` review flags,
+  border-heavy non-interactive wrappers (`composition-patterns.md` §2.1), non-uniform button
+  group sizes, dense copy >65ch, or missing `State Switcher` on product screens.
+- **VERDE (Aprobado)**: verified token discipline, measured contrast, layout hierarchy, and
+  direction fidelity with exact counts/ratios.
 
 ### Deterministic gate (`scripts/design-gate.py`)
 
@@ -97,12 +113,18 @@ browser, no network. Exit `0` clean, `1` findings, `2` usage error; findings pri
 | R10 `numbered-markers` | `01`–`09` marker at the start of a heading or a `.index`/`.num`/`.step` element — **review flag only**, the gate cannot know whether it is a real sequence | G4 |
 | R11 `radius-drift` | `border-radius` literal not `var(--radius*)`, `calc(var(--radius) …)` or `9999px` | E1 |
 | R12 `transition-duration-tell` | transition duration > 500ms (animation entrances are not counted) | F3 |
+| R13 `unsafe-on-primary` | missing `--primary-foreground`/`--on-brand` in `:root`, or `var(--primary)` bg paired with `var(--foreground)` | A2, E12 |
+| R14 `wrapper-border-box` | non-interactive layout wrapper (`section`, `main`, `.section`, `.wrapper`, `.container`, `.layout`, `.grid`, `.stack`) uses full box `border:` | D, E12 |
+| R15 `micro-text-size` | explicit `font-size` literal `< 12px` (`< 0.75rem`) | B1 |
+| R16 `media-dimensions-alt` | `<img>` missing `alt`/`width`/`height`, or `<svg>` missing `width`/`height` | F1, G |
+| R17 `root-contrast-pair` | literal hex foreground/background pair in `:root` `< 4.5:1` (WCAG AA) | C3, E12 |
 
 Deliberate allowances, so the gate stays quiet on legitimate systems: raw colors inside
 `:root` and inside token re-map blocks (`[data-theme=…]`, `.dark`,
 `@media (prefers-color-scheme: …)`); `calc()` token derivations for color and spacing;
 negative ramp-step margins; arrows/`⌘`/`⇧` and `<kbd>` glyphs (not emoji).
 
-Limits: durations and colors behind `var()` cannot be evaluated statically; the type
-and size ramps need semantic intent and stay with B1/B3; a finding is a review prompt,
+Limits: durations and colors behind `var()` cannot be evaluated statically (`R17` checks
+literal `:root` hex pairs only); layout overflow, clipping, and computed DOM contrast across
+themes are verified dynamically by `scripts/visual-audit.py`. A finding is a review prompt,
 not a verdict — fix it or name the deviation and why (Hard Rule 1).

@@ -49,6 +49,9 @@ self-contained HTML.
 
 ## 4. Mobile-specific states (E3 "all states designed")
 
+- **State Switcher** (recommended for interactive app screens): render a compact preview
+  pill bar (`Default` / `Loading` / `Empty` / `Error`) above or outside the phone bezel
+  so reviewers can switch states without polluting the in-app navigation bar.
 - Empty screens: centered illustration/texture 120–160px, one line `lg`, one line `sm`
   muted, one primary button — vertically centered in remaining space.
 - Loading: skeleton rows matching final list geometry; pull-to-refresh affordance note.
