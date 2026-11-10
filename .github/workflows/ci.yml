@@ -20,8 +20,19 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run design-gate unit & artboard integration tests
+      - name: Run design-gate and visual-audit tests
         run: python3 -m unittest discover -s tests -v
 
       - name: Run static design gate across all example artboards
         run: python3 skill/scripts/design-gate.py examples/*/*.html
+
+      - name: Set up Node.js for DESIGN.md lint
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Lint DESIGN.md files with Google design.md CLI
+        run: |
+          for file in examples/*/DESIGN.md; do
+            npx -y @google/design.md lint "$file"
+          done
